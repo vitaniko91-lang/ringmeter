@@ -50,6 +50,20 @@ describe('measure()', () => {
     expect(o.ok).toBe(false); if (!o.ok) expect(['BLUR', 'NO_MARKER']).toContain(o.code)
   })
   it('TOO_FAR on a tiny sheet', () => expect(measure(cv, renderSynthetic(cv, { pxPerMm: 6 }).image)).toMatchObject({ ok: false, code: 'TOO_FAR' }))
+  it('EDGE_UNCLEAR when a shadow crescent displaces part of the inner rim', () => {
+    // A 120° dark arc 2.5 px inside the true rim (thickness 3, gray 140) keeps the hole's outer contour
+    // circular — the coarse blob survives — but the rays inside the arc lock onto the shadow's edge instead
+    // of the rim, ~3 canonical px short of it, which MAD alone cannot clean up.
+    const { image } = renderSynthetic(cv)
+    const gray = toGray(cv, image)
+    const cx = (15 + 60) * 12 - 0.5, cy = (30 + 10) * 12 - 0.5 // ring centre, source px (origin 15,30 mm; centre 60,10 mm; 12 px/mm)
+    const rIn = (17.3 / 2) * 12 // inner rim radius, source px
+    cv.ellipse(gray, new cv.Point(cx, cy), new cv.Size(rIn - 2.5, rIn - 2.5), 0, 0, 120, new cv.Scalar(140), 3, cv.LINE_AA)
+    const o = measure(cv, grayToImageLike(cv, gray))
+    gray.delete()
+    expect(o.ok).toBe(false)
+    if (!o.ok) { expect(o.code).toBe('EDGE_UNCLEAR'); expect(o.overlay.innerBoundary).toHaveLength(64) }
+  })
   it('every reject carries the full timings prefix up to the failing stage', () => {
     const o = measure(cv, renderSynthetic(cv, { innerMm: null }).image)
     expect(o.ok).toBe(false)
