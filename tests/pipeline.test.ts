@@ -61,7 +61,7 @@ describe('measure()', () => {
     try {
       const o = measure(cv, renderSynthetic(cv).image)
       expect(o.ok).toBe(false)
-      if (!o.ok) { expect(o.code).toBe('NO_RING'); expect(o.detail).toContain('internal error'); expect(o.overlay.markerQuad).toHaveLength(4) }
+      if (!o.ok) { expect(o.code).toBe('INTERNAL_ERROR'); expect(o.detail).toContain('internal error'); expect(o.overlay.markerQuad).toHaveLength(4) }
     } finally { spy.mockRestore() }
   })
 })

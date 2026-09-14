@@ -3,7 +3,7 @@ export type Quad = [Pt, Pt, Pt, Pt]           // TL, TR, BR, BL in source-image 
 export type ImageLike = { data: Uint8ClampedArray; width: number; height: number } // RGBA
 export type Timings = Record<string, number>
 
-export type RejectCode = 'BAD_FILE' | 'NO_MARKER' | 'TOO_FAR' | 'TILT' | 'BLUR' | 'NO_RING' | 'MULTIPLE_RINGS' | 'ELLIPTIC' | 'EDGE_UNCLEAR'
+export type RejectCode = 'BAD_FILE' | 'NO_MARKER' | 'TOO_FAR' | 'TILT' | 'BLUR' | 'NO_RING' | 'MULTIPLE_RINGS' | 'ELLIPTIC' | 'EDGE_UNCLEAR' | 'INTERNAL_ERROR'
 
 export const REJECT_HINT: Record<RejectCode, string> = {
   BAD_FILE: 'This file could not be decoded. Use a JPEG or PNG photo.',
@@ -15,6 +15,7 @@ export const REJECT_HINT: Record<RejectCode, string> = {
   MULTIPLE_RINGS: 'More than one ring-like object is in the zone. Keep exactly one ring.',
   ELLIPTIC: 'The ring looks tilted (oval). Shoot from directly above.',
   EDGE_UNCLEAR: 'The inner edge is not clean (glare or shadow inside the ring). Retake in softer, even light.',
+  INTERNAL_ERROR: 'Something went wrong while processing this photo. Try another photo or reload the page.',
 }
 
 export type SizeReading = { eu: number; us: number; uk: string }

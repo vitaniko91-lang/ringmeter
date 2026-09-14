@@ -15,3 +15,4 @@
 | Review fixes — Tasks 5–7 | 21:54 | 22:07 | 13 |
 | Task 8 — measure() pipeline | 22:12 | 22:20 | 8 |
 | Task 9 — Ring Kit PDF + render check | 22:20 | 22:23 | 3 |
+| Review fixes — Task 8 | 22:32 | 22:41 | 9 |

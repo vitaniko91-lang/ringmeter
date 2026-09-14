@@ -137,6 +137,6 @@ export function measure(cv: CV, image: ImageLike): Outcome {
       sizes: sizeRange(diameterMm, u.total), overlay: { markerQuad: quad, innerBoundary, scaleBar }, timings, totalMs: total(),
     }
   } catch (e) {
-    return reject('NO_RING', `internal error: ${errorMessage(cv, e)}`, quad ? { markerQuad: quad } : {})
+    return reject('INTERNAL_ERROR', `internal error: ${errorMessage(cv, e)}`, quad ? { markerQuad: quad } : {})
   } finally { R?.delete(); gray?.delete() }
 }
