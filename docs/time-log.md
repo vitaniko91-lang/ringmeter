@@ -22,3 +22,4 @@
 | Task 11 — result, reject, overlay, landing, instructions, limits | 23:22 | 23:29 | 7 |
 | Review fixes — Tasks 10–11 | 23:43 | 00:40 | 57 |
 | Task 12 — test-set skeleton, evaluate runner, report builder | 00:43 | 01:08 | 25 |
+| Task 13 — README, delivery notes, video script, repo, deploy | 01:08 | 01:15 | 7 |

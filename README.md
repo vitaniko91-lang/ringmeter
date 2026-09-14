@@ -2,7 +2,7 @@
 
 Phone-friendly web page that estimates a ring's inner diameter from a photo taken over a printed calibration sheet (20 mm ArUco marker). Everything runs on-device in a Web Worker (OpenCV.js WASM); nothing is uploaded.
 
-Live demo: <VERCEL_URL>   ·   Ring Kit: `/ring-kit.pdf` (print at 100 %, check the scale with the coin circle)
+Live demo: https://ringmeter.vercel.app   ·   Ring Kit: `/ring-kit.pdf` (print at 100 %, check the scale with the coin circle)
 
 ## Run
     npm i

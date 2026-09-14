@@ -25,3 +25,4 @@ dist-ssr
 
 testset/.cache/
 test-results/
+.vercel
