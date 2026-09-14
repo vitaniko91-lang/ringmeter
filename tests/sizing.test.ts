@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { euSize, usSize, ukSize, sizesFor, sizeRange } from '../src/sizing/sizing'
 
-// Anchor rows from the Wikipedia “Ring size” comparison table (ISO 8653 circumference / US / UK)
+// d / US / UK are the Wikipedia “Ring size” table rows; EU is roundHalf(π·d), i.e. the table's circumference rounded to the nearest half.
 const anchors = [
   { d: 15.70, eu: 49.5, us: 5, uk: 'J½' },
   { d: 16.51, eu: 52, us: 6, uk: 'L½' },
@@ -25,4 +25,6 @@ describe('sizing', () => {
     expect(sizeRange(17.35, 0.05).spans).toBe(false)
   })
   it('sizesFor returns all three scales', () => { expect(sizesFor(17.35)).toEqual({ eu: 54.5, us: 7, uk: 'N½' }) })
+  it('UK scale continues past Z as Z1, Z2 …', () => { expect(ukSize(23.42)).toBe('Z4') })
+  it('range spans when the UK index crosses a Z-extension boundary', () => { expect(sizeRange(24, 0.3).spans).toBe(true) })
 })

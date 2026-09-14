@@ -19,5 +19,8 @@ describe('kit geometry', () => {
   it('everything fits on A4 with 10 mm margins', () => {
     const right = K.MARKER_ON_SHEET.x + K.ZONE.x + K.ZONE.w
     expect(right).toBeLessThanOrEqual(K.SHEET.w - 10)
+    expect(K.MARKER_ON_SHEET.y + K.ZONE.y).toBeGreaterThanOrEqual(10)
+    expect(K.MARKER_ON_SHEET.x - K.QUIET_ZONE_MM).toBeGreaterThanOrEqual(10)
+    expect(K.MARKER_ON_SHEET.y + K.ZONE.y + K.ZONE.h).toBeLessThanOrEqual(K.SHEET.h - 10)
   })
 })

@@ -7,7 +7,7 @@ export const GATES = {
   MAX_ANGLE_DEV_DEG: 5,    // marker corner angles vs 90°
   BLUR_MIN_SCORE: 60,      // Laplacian variance on the marker crop normalised to 200 px — CALIBRATED in Task 13
   MIN_AXES_RATIO: 0.985,   // hole ellipse minor/major — fine tilt check (~10°)
-}
+} as const
 
 export function sideLengths(q: Quad): number[] {
   return q.map((p, i) => { const n = q[(i + 1) % 4]; return Math.hypot(n[0] - p[0], n[1] - p[1]) })

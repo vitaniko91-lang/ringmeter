@@ -7,12 +7,13 @@ export const ASSUMED = {
   focalFraction: 0.7,  // f_px ≈ 0.7 × image width for phone main cameras (24–28 mm equivalent)
   edgePx: 1.0,         // residual edge-localisation error after sub-pixel refinement, in source px
   cornerPx: 0.5,       // ArUco corner error per side, in source px
-}
+} as const
 
 export function estimateDistanceMm(imageWidthPx: number, markerSidePx: number) {
   return (ASSUMED.focalFraction * imageWidthPx * MARKER_MM) / markerSidePx
 }
 
+/** Precondition: marker gates passed (markerSidePx, pxPerMm, distanceMm > 0). */
 export function uncertainty(a: { diameterMm: number; pxPerMm: number; markerSidePx: number; distanceMm: number; tiltDeg: number }) {
   const px = ASSUMED.edgePx / a.pxPerMm
   const marker = (a.diameterMm * ASSUMED.cornerPx) / a.markerSidePx

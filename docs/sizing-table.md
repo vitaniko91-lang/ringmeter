@@ -4,7 +4,7 @@ Source: ISO 8653:2016 (EU/ISO = inner circumference in mm) with US and UK/AU col
 
 - EU = π × d (mm)
 - US size s: circumference C = 2.55 × s + 36.5 mm → s = (C − 36.5) / 2.55
-- UK/AU index i: circumference C = 37.5 + 1.25 × i (size C = 40 mm; A = 0 … Z = 25); half sizes = +0.5 index
+- UK/AU index i: circumference = 37.5 + 1.25 × i mm (size C = 40 mm; A = 0 … Z = 25, then Z1, Z2 …); half sizes = +0.5 index
 - Rounding: Each scale is rounded to the nearest half size. When the ±σ band crosses a size boundary both sizes are shown.
 
 | Inner Ø mm | Circumference mm | EU/ISO | US | UK |

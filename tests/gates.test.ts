@@ -15,6 +15,7 @@ describe('gates', () => {
     const trap: Quad = [[100, 100], [300, 100], [290, 300], [110, 300]] // bottom 180 vs top 200
     expect(markerGates(trap)).toBe('TILT')
   })
+  it('rejects TILT on a sheared marker with equal sides', () => expect(markerGates([[100, 100], [300, 100], [335, 297], [135, 297]])).toBe('TILT'))
   it('rejects BLUR below the threshold', () => { expect(blurGate(GATES.BLUR_MIN_SCORE - 1)).toBe('BLUR'); expect(blurGate(GATES.BLUR_MIN_SCORE + 1)).toBeNull() })
   it('rejects ELLIPTIC below the axes ratio', () => { expect(ellipseGate(0.97)).toBe('ELLIPTIC'); expect(ellipseGate(0.995)).toBeNull() })
 })

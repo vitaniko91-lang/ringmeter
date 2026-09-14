@@ -6,7 +6,7 @@ export const SIZING_SOURCE = {
   formulas: {
     eu: 'EU = π × d (mm)',
     us: 'US size s: circumference C = 2.55 × s + 36.5 mm → s = (C − 36.5) / 2.55',
-    uk: 'UK/AU index i: circumference C = 37.5 + 1.25 × i (size C = 40 mm; A = 0 … Z = 25); half sizes = +0.5 index',
+    uk: 'UK/AU index i: circumference = 37.5 + 1.25 × i mm (size C = 40 mm; A = 0 … Z = 25, then Z1, Z2 …); half sizes = +0.5 index',
   },
   rounding: 'Each scale is rounded to the nearest half size. When the ±σ band crosses a size boundary both sizes are shown.',
 }
@@ -17,9 +17,13 @@ export const circumferenceMm = (d: number) => Math.PI * d
 export function euSize(d: number) { return roundHalf(circumferenceMm(d)) }
 export function usSize(d: number) { return roundHalf((circumferenceMm(d) - 36.5) / 2.55) }
 export function ukSize(d: number): string {
-  const idx = Math.min(25.5, Math.max(0, roundHalf((circumferenceMm(d) - 37.5) / 1.25)))
-  const letter = String.fromCharCode(65 + Math.floor(idx))
-  return idx % 1 === 0 ? letter : `${letter}½`
+  const idx = Math.max(0, roundHalf((circumferenceMm(d) - 37.5) / 1.25))
+  if (idx <= 25.5) {
+    const letter = String.fromCharCode(65 + Math.floor(idx))
+    return idx % 1 === 0 ? letter : `${letter}½`
+  }
+  const n = idx - 25
+  return idx % 1 === 0 ? `Z${n}` : `Z${Math.floor(n)}½`
 }
 export function sizesFor(d: number): SizeReading { return { eu: euSize(d), us: usSize(d), uk: ukSize(d) } }
 
