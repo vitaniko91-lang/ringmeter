@@ -10,3 +10,4 @@
 | Task 2 — sizing amendment | 19:57 | 20:00 | 3 |
 | Review fixes — Tasks 0–4 | 20:00 | 20:17 | 17 |
 | Task 5 — opencv loader, synthetic, marker | 20:18 | 20:22 | 4 |
+| Task 6 — rectify + hole candidates | 20:22 | 20:23 | 1 |
