@@ -11,7 +11,7 @@ export const REJECT_HINT: Record<RejectCode, string> = {
   TOO_FAR: 'Move closer — the marker must be at least ~1 cm wide on your screen (15–25 cm from the sheet).',
   TILT: 'The sheet looks tilted. Hold the phone parallel to the sheet, directly above it.',
   BLUR: 'The photo is blurry. Tap to focus on the ring, hold still, and shoot again.',
-  NO_RING: 'No ring found inside the dashed zone. Place one ring flat inside the zone, not on the marker.',
+  NO_RING: 'No ring found between the four teal corners. Place one ring flat there, not on the marker.',
   MULTIPLE_RINGS: 'More than one ring-like object is in the zone. Keep exactly one ring.',
   ELLIPTIC: 'The ring looks tilted (oval). Shoot from directly above.',
   EDGE_UNCLEAR: 'The inner edge is not clean (glare or shadow inside the ring). Retake in softer, even light.',
@@ -21,6 +21,8 @@ export const REJECT_HINT: Record<RejectCode, string> = {
 export type SizeReading = { eu: number; us: number; uk: string }
 
 export type Overlay = { markerQuad?: Quad; innerBoundary?: Pt[]; scaleBar?: [Pt, Pt] }
+
+export type Photo = { width: number; height: number; bitmap: ImageBitmap }   // decoded, downscaled preview owned by the app (closed on reset / replace)
 
 export type MeasureResult = {
   ok: true
