@@ -4,7 +4,7 @@ import { renderSynthetic } from '../src/cv/synthetic'
 import { toGray } from '../src/cv/image'
 import { detectMarker } from '../src/cv/marker'
 import { rectify } from '../src/cv/rectify'
-import { findHoleCandidates } from '../src/cv/ring'
+import { findHoleCandidates, refineHole } from '../src/cv/ring'
 import { CANON_PX_PER_MM, mmToCanon } from '../src/kit/kit-geometry'
 
 let cv: CV
@@ -36,4 +36,17 @@ describe('hole candidates', () => {
   })
   it('finds two with an extra ring', () => expect(findHoleCandidates(cv, canonOf({ extraRing: true }).canon)).toHaveLength(2))
   it('finds none without a ring', () => expect(findHoleCandidates(cv, canonOf({ innerMm: null }).canon)).toHaveLength(0))
+})
+
+describe('refineHole', () => {
+  for (const [inner, opts] of [[17.30, { tilt: 'mild', blurPx: 5 }], [16.55, { tilt: 'mild', blurPx: 7 }], [19.10, { tilt: 'none', blurPx: 3 }]] as const) {
+    it(`recovers ${inner} mm within 0.1 mm`, () => {
+      const { canon } = canonOf({ ...opts, innerMm: inner })
+      const c = findHoleCandidates(cv, canon)[0]
+      const h = refineHole(cv, canon, c)
+      expect(Math.abs((2 * h.r) / CANON_PX_PER_MM - inner)).toBeLessThan(0.1)
+      expect(h.points).toHaveLength(64)
+      expect(h.axesRatio).toBeGreaterThan(0.985)
+    })
+  }
 })
