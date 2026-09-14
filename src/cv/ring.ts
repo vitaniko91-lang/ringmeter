@@ -59,7 +59,6 @@ export type RefinedHole = {
 }
 
 const RAYS = 64, WINDOW_PX = 8, STEP_PX = 0.25
-const REFIT_MIN_INLIERS = 32
 
 const det3 = (m: number[]) => m[0] * (m[4] * m[8] - m[5] * m[7]) - m[1] * (m[3] * m[8] - m[5] * m[6]) + m[2] * (m[3] * m[7] - m[4] * m[6])
 
@@ -100,13 +99,13 @@ export function refineHole(cv: CV, canon: any, c: HoleCandidate): RefinedHole {
       const r = rs[bi] + Math.max(-1, Math.min(1, off)) * STEP_PX
       pts.push([c.cx + ux * r, c.cy + uy * r])
     }
-    // Two passes of MAD outlier rejection; the second pass re-scores every ray against the refit.
+    // Two passes of MAD outlier rejection; the second pass re-scores every ray against the refit. The median
+    // threshold guarantees at least half of the rays survive each pass, so the refit always has ≥ 32 points.
     let fit = fitCircle(pts), keep = pts
     for (let pass = 0; pass < 2; pass++) {
       const res = pts.map(([x, y]) => Math.hypot(x - fit.cx, y - fit.cy) - fit.r)
       const mad = res.map(Math.abs).sort((a, b) => a - b)[res.length >> 1]
       keep = pts.filter((_, i) => Math.abs(res[i]) <= Math.max(3 * 1.4826 * mad, 0.5))
-      if (keep.length < REFIT_MIN_INLIERS) break // too few survivors to trust a refit: keep the current fit
       fit = fitCircle(keep)
     }
     const residualPx = Math.sqrt(keep.reduce((s, [x, y]) => s + (Math.hypot(x - fit.cx, y - fit.cy) - fit.r) ** 2, 0) / keep.length)

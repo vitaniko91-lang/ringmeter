@@ -42,8 +42,11 @@ export function renderSynthetic(cv: CV, o: SyntheticOpts = {}): { image: ImageLi
   }
   const ring = (cxMm: number, cyMm: number, innerMm: number) => {
     const outer = o.outerMm ?? innerMm + 4
-    disc(cv, img, (ORIGIN_MM.x + cxMm) * P, (ORIGIN_MM.y + cyMm) * P, (outer / 2) * P, o.ringGray ?? 110)
-    disc(cv, img, (ORIGIN_MM.x + cxMm) * P, (ORIGIN_MM.y + cyMm) * P, (innerMm / 2) * P, 255)
+    // −0.5: the marker's edges sit on pixel boundaries (its top-left is pixel ORIGIN·P, whose left edge is at
+    // ORIGIN·P − 0.5 in pixel-centre coordinates), so a point at (x, y) mm lands at pixel-centre coordinate x·P − 0.5.
+    const cx = (ORIGIN_MM.x + cxMm) * P - 0.5, cy = (ORIGIN_MM.y + cyMm) * P - 0.5
+    disc(cv, img, cx, cy, (outer / 2) * P, o.ringGray ?? 110)
+    disc(cv, img, cx, cy, (innerMm / 2) * P, 255)
   }
   if (inner !== null) ring(SYN_RING_CENTER_MM.x, SYN_RING_CENTER_MM.y, inner)
   if (o.extraRing) ring(SYN_RING_CENTER_MM.x + 22, SYN_RING_CENTER_MM.y + 18, 15.0)

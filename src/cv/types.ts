@@ -32,6 +32,8 @@ export type MeasureResult = {
   markerSidePx: number
   estDistanceMm: number
   blurScore: number
+  edgeResidualPx: number   // RMS radial residual of the inlier rays against the final circle fit, canonical px
+  edgeInliers: number      // rays (of 64) that survived outlier rejection and fed the fit
   sizes: { nominal: SizeReading; low: SizeReading; high: SizeReading; spans: boolean }
   overlay: Required<Overlay>
   timings: Timings

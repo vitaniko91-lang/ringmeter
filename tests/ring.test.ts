@@ -61,10 +61,11 @@ describe('refineHole', () => {
       expect(h.inliers).toBeGreaterThanOrEqual(60)
       // Every one of the 64 sampled edge points sits on the TRUE-radius circle about the fitted centre — the rim was
       // localised on every ray, not merely fitted consistently. Per-ray bound is 1 px (= the 0.1 mm diameter tolerance):
-      // measured max is 0.46–0.70 px, worst on axis-aligned rays of the blur-3 render (rasteriser/resampling aliasing).
-      // The centre carries two terms the refinement cannot see — the synthetic draws the disc at pixel-centre 900.0
-      // while the marker edge sits at 179.5 (0.42 px/axis in canon) and the ArUco scale term (≤ 0.2 % × 600 px) —
-      // so it gets a 1.5 px budget against mmToCanon(SYN_RING_CENTER_MM) rather than 0.5.
+      // measured max is 0.40–0.44 px.
+      // The centre carries one term the refinement cannot see — the ArUco SUBPIX scale bias (≤ 0.2 % × the 600 px lever
+      // arm from the marker origin): measured 0.48 / 0.95 / 0.46 px, all along x, once the synthetic's disc centre sits
+      // on the marker's pixel-edge convention (−0.5 px; before that 1.03 / 1.39 / 0.99 px). 0.95 px leaves no margin
+      // for a 1.0 px budget, so it stays at 1.5 against mmToCanon(SYN_RING_CENTER_MM).
       const T = mmToCanon(SYN_RING_CENTER_MM), R = (inner / 2) * CANON_PX_PER_MM
       for (const [x, y] of h.points) expect(Math.abs(Math.hypot(x - h.cx, y - h.cy) - R)).toBeLessThan(1.0)
       expect(Math.hypot(h.cx - T.x, h.cy - T.y)).toBeLessThan(1.5)
