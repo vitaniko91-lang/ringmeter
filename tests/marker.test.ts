@@ -23,4 +23,11 @@ describe('marker detection', () => {
     const gray = toGray(cv, renderSynthetic(cv, { noMarker: true }).image)
     expect(detectMarker(cv, gray)).toBeNull(); gray.delete()
   })
+  it('returns null when two sheets (two id-0 markers) are in the frame', () => {
+    const gray = toGray(cv, renderSynthetic(cv).image)
+    const two = new cv.Mat(gray.rows, 2 * gray.cols, cv.CV_8UC1, new cv.Scalar(255)) // 2800 × 900
+    for (const x of [0, gray.cols]) { const dst = two.roi(new cv.Rect(x, 0, gray.cols, gray.rows)); gray.copyTo(dst); dst.delete() }
+    gray.delete()
+    expect(detectMarker(cv, two)).toBeNull(); two.delete()
+  })
 })

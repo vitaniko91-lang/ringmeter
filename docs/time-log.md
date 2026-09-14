@@ -12,3 +12,4 @@
 | Task 5 — opencv loader, synthetic, marker | 20:18 | 20:22 | 4 |
 | Task 6 — rectify + hole candidates | 20:22 | 20:23 | 1 |
 | Task 7 — radial refinement + circle fit | 20:23 | 20:25 | 2 |
+| Review fixes — Tasks 5–7 | 21:54 | 22:07 | 13 |

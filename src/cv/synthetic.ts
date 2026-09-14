@@ -20,9 +20,11 @@ export const SYN_RING_CENTER_MM = { x: ZONE.x + ZONE.w / 2, y: ZONE.y + ZONE.h /
 
 function disc(cv: CV, img: any, cxPx: number, cyPx: number, rPx: number, gray: number) {
   const SH = 4, F = 1 << SH
-  // OpenCV rasterises a filled AA disc ~0.5 px larger than its nominal radius; compensate so the
-  // intensity edge lands exactly at rPx in pixel-centre coordinates (measured in recon/iso.mjs).
-  cv.circle(img, new cv.Point(Math.round(cxPx * F), Math.round(cyPx * F)), Math.round((rPx - 0.5) * F), new cv.Scalar(gray), -1, cv.LINE_AA, SH)
+  // OpenCV rasterises a filled AA disc ~0.6 px larger than its nominal radius; compensate so the
+  // 50 % intensity crossing lands at rPx in pixel-centre coordinates. Measured on the rendered radial
+  // profile (recon/iso.mjs, re-measured at the Tasks 5–7 review): with −0.5 the crossing sits at
+  // +0.09…+0.10 px, with −0.6 at ≈ 0.
+  cv.circle(img, new cv.Point(Math.round(cxPx * F), Math.round(cyPx * F)), Math.round((rPx - 0.6) * F), new cv.Scalar(gray), -1, cv.LINE_AA, SH)
 }
 
 export function renderSynthetic(cv: CV, o: SyntheticOpts = {}): { image: ImageLike; truthMm: number | null } {
@@ -33,8 +35,10 @@ export function renderSynthetic(cv: CV, o: SyntheticOpts = {}): { image: ImageLi
     const dict = cv.getPredefinedDictionary(cv.DICT_4X4_50)
     const mk = new cv.Mat()
     cv.generateImageMarker(dict, MARKER_ID, Math.round(MARKER_MM * P), mk, 1)
-    mk.copyTo(img.roi(new cv.Rect(Math.round(ORIGIN_MM.x * P), Math.round(ORIGIN_MM.y * P), mk.cols, mk.rows)))
-    mk.delete()
+    dict.delete()
+    const dst = img.roi(new cv.Rect(Math.round(ORIGIN_MM.x * P), Math.round(ORIGIN_MM.y * P), mk.cols, mk.rows))
+    mk.copyTo(dst)
+    dst.delete(); mk.delete()
   }
   const ring = (cxMm: number, cyMm: number, innerMm: number) => {
     const outer = o.outerMm ?? innerMm + 4

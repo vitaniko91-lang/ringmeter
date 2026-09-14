@@ -8,13 +8,17 @@ export type Rectified = { canon: any; H: any; Hinv: any; delete(): void }
 export function rectify(cv: CV, gray: any, quad: Quad): Rectified {
   const src = cv.matFromArray(4, 1, cv.CV_32FC2, quad.flat())
   const dst = cv.matFromArray(4, 1, cv.CV_32FC2, MARKER_CANON_PX.flatMap((p) => [p.x, p.y]))
-  const H = cv.getPerspectiveTransform(src, dst)
-  const canon = new cv.Mat()
-  cv.warpPerspective(gray, canon, H, new cv.Size(CANON_SIZE_PX.w, CANON_SIZE_PX.h), cv.INTER_LINEAR, cv.BORDER_CONSTANT, new cv.Scalar(255))
-  const Hinv = new cv.Mat()
-  cv.invert(H, Hinv, cv.DECOMP_LU)
-  src.delete(); dst.delete()
-  return { canon, H, Hinv, delete() { canon.delete(); H.delete(); Hinv.delete() } }
+  let H: any = null, canon: any = null, Hinv: any = null
+  try {
+    H = cv.getPerspectiveTransform(src, dst)
+    canon = new cv.Mat()
+    cv.warpPerspective(gray, canon, H, new cv.Size(CANON_SIZE_PX.w, CANON_SIZE_PX.h), cv.INTER_LINEAR, cv.BORDER_CONSTANT, new cv.Scalar(255))
+    Hinv = new cv.Mat()
+    cv.invert(H, Hinv, cv.DECOMP_LU)
+    const out: Rectified = { canon, H, Hinv, delete() { out.canon.delete(); out.H.delete(); out.Hinv.delete() } }
+    H = canon = Hinv = null // ownership handed to the caller
+    return out
+  } finally { src.delete(); dst.delete(); H?.delete(); canon?.delete(); Hinv?.delete() }
 }
 
 /** Map canonical px points back to source-image px. */
