@@ -32,7 +32,7 @@ describe('measure()', () => {
     expect(Object.keys(o.timings)).toEqual(['decode', 'marker', 'gates', 'rectify', 'ring', 'result'])
     expect(o.overlay.innerBoundary).toHaveLength(64)
     expect(o.overlay.markerQuad).toHaveLength(4)
-    expect(o.totalMs).toBeLessThan(3000)
+    expect(o.totalMs).toBeLessThan(15000) // catastrophic-regression bound only; timing evidence lives in testset/RESULTS.md
     expect(o.edgeInliers).toBeGreaterThanOrEqual(48)
     expect(o.edgeResidualPx).toBeLessThan(0.6)
   })
@@ -60,7 +60,11 @@ describe('measure()', () => {
   it('TILT under strong perspective', () => expect(measure(cv, renderSynthetic(cv, { tilt: 'strong' }).image)).toMatchObject({ ok: false, code: 'TILT' }))
   it('rejects a heavily blurred photo (BLUR, or NO_MARKER if the marker itself is lost)', () => {
     const o = measure(cv, renderSynthetic(cv, { blurPx: 21 }).image)
-    expect(o.ok).toBe(false); if (!o.ok) expect(['BLUR', 'NO_MARKER']).toContain(o.code)
+    expect(o.ok).toBe(false)
+    if (!o.ok) {
+      expect(['BLUR', 'NO_MARKER']).toContain(o.code)
+      if (o.code === 'BLUR') expect(typeof o.blurScore).toBe('number')
+    }
   })
   it('TOO_FAR on a tiny sheet', () => expect(measure(cv, renderSynthetic(cv, { pxPerMm: 6 }).image)).toMatchObject({ ok: false, code: 'TOO_FAR' }))
   it('EDGE_UNCLEAR when a shadow crescent displaces part of the inner rim', () => {

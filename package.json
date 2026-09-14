@@ -11,7 +11,7 @@
     "test": "vitest run",
     "kit": "tsx scripts/make-kit.ts && tsx scripts/check-kit.ts",
     "sizing-table": "tsx scripts/sizing-table.ts",
-    "evaluate": "tsx scripts/evaluate.ts"
+    "evaluate": "vite build && tsx scripts/evaluate.ts"
   },
   "dependencies": {
     "@fontsource/ibm-plex-mono": "^5.3.0",

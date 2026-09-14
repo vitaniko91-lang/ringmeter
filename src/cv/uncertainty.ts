@@ -9,6 +9,9 @@ export const ASSUMED = {
   cornerPx: 0.5,       // ArUco corner error per side, in source px
 } as const
 
+/** Set from the observed test-set error in Task 14 — must be ≥ max observed |err|. Displayed in the Limits section. */
+export const TYPICAL_SIGMA_MM = 0.3
+
 /** Camera-to-sheet distance from the marker's apparent size: f_px ≈ focalFraction × long side, D = f_px · 20 mm / side. */
 export function estimateDistanceMm(longSidePx: number, markerSidePx: number) {
   return (ASSUMED.focalFraction * longSidePx * MARKER_MM) / markerSidePx

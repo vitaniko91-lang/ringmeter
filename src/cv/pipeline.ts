@@ -70,10 +70,12 @@ export function measure(cv: CV, image: ImageLike): Outcome {
   const t0 = performance.now(); let last = t0
   const lap = (name: string) => { const now = performance.now(); timings[name] = +(now - last).toFixed(1); last = now }
   const total = () => +(performance.now() - t0).toFixed(1)
-  const reject = (code: RejectCode, detail: string, overlay: Overlay = {}): Reject => ({ ok: false, code, hint: REJECT_HINT[code], detail, overlay, timings, totalMs: total() })
+  const reject = (code: RejectCode, detail: string, overlay: Overlay = {}, blurScore?: number): Reject =>
+    ({ ok: false, code, hint: REJECT_HINT[code], detail, overlay, timings, totalMs: total(), blurScore })
 
   let quad: Quad | null = null
   let gray: any = null, R: Rectified | null = null
+  let blur: number | undefined   // set once the marker gates pass; carried into later rejects "when known"
   try {
     gray = toGray(cv, image)
     lap('decode')
@@ -94,11 +96,11 @@ export function measure(cv: CV, image: ImageLike): Outcome {
     // 2. gates
     const geo = markerGeometry(quad)
     const g1 = markerGates(quad)
-    const blur = g1 ? 0 : blurScore(cv, gray, quad)
+    if (!g1) blur = blurScore(cv, gray, quad)
     lap('gates')
     if (g1) return reject(g1, `marker side ${geo.sidePx.toFixed(0)} px (${geo.pxPerMm.toFixed(1)} px/mm), side ratio ${geo.ratio.toFixed(3)}, corner deviation ${geo.maxAngleDev.toFixed(1)}°`, { markerQuad: quad })
-    const g2 = blurGate(blur)
-    if (g2) return reject(g2, `blur score ${blur.toFixed(0)} < ${GATES.BLUR_MIN_SCORE}`, { markerQuad: quad })
+    const g2 = blurGate(blur!)
+    if (g2) return reject(g2, `blur score ${blur!.toFixed(0)} < ${GATES.BLUR_MIN_SCORE}`, { markerQuad: quad }, blur)
 
     // 3. rectify to 10 px/mm. A source much denser than the canonical frame is low-passed first so the warp does not
     //    alias the rim — only inside the footprint the warp reads (4–5× cheaper than the full frame on a 12 MP photo).
@@ -115,16 +117,16 @@ export function measure(cv: CV, image: ImageLike): Outcome {
 
     // 4. ring
     const cands = findHoleCandidates(cv, R.canon)
-    if (cands.length === 0) { lap('ring'); return reject('NO_RING', 'no circular hole found inside the zone', { markerQuad: quad }) }
-    if (cands.length > 1) { lap('ring'); return reject('MULTIPLE_RINGS', `${cands.length} ring-like holes in the zone`, { markerQuad: quad }) }
+    if (cands.length === 0) { lap('ring'); return reject('NO_RING', 'no circular hole found inside the zone', { markerQuad: quad }, blur) }
+    if (cands.length > 1) { lap('ring'); return reject('MULTIPLE_RINGS', `${cands.length} ring-like holes in the zone`, { markerQuad: quad }, blur) }
     const hole = refineHole(cv, R.canon, cands[0])
     lap('ring')
     const innerBoundary = canonToSource(cv, R.Hinv, hole.points)
     const g3 = edgeGate(hole.residualPx, hole.inliers)
-    if (g3) return reject(g3, `edge residual ${hole.residualPx.toFixed(2)} px, ${hole.inliers}/64 inliers`, { markerQuad: quad, innerBoundary })
+    if (g3) return reject(g3, `edge residual ${hole.residualPx.toFixed(2)} px, ${hole.inliers}/64 inliers`, { markerQuad: quad, innerBoundary }, blur)
     const tiltDeg = (Math.acos(Math.min(1, hole.axesRatio)) * 180) / Math.PI
     const g4 = ellipseGate(hole.axesRatio)
-    if (g4) return reject(g4, `hole axes ratio ${hole.axesRatio.toFixed(3)} (tilt ≈ ${tiltDeg.toFixed(0)}°)`, { markerQuad: quad, innerBoundary })
+    if (g4) return reject(g4, `hole axes ratio ${hole.axesRatio.toFixed(3)} (tilt ≈ ${tiltDeg.toFixed(0)}°)`, { markerQuad: quad, innerBoundary }, blur)
 
     // 5. numbers
     const diameterMm = (2 * hole.r) / CANON_PX_PER_MM
@@ -135,11 +137,11 @@ export function measure(cv: CV, image: ImageLike): Outcome {
     lap('result')
     return {
       ok: true, diameterMm, sigmaMm: u.total, sigmaParts: { px: u.px, marker: u.marker, parallax: u.parallax },
-      axesRatio: hole.axesRatio, tiltDeg, pxPerMm: geo.pxPerMm, markerSidePx: geo.sidePx, estDistanceMm, blurScore: blur,
+      axesRatio: hole.axesRatio, tiltDeg, pxPerMm: geo.pxPerMm, markerSidePx: geo.sidePx, estDistanceMm, blurScore: blur!, // known: g1/g2 gates passed above
       edgeResidualPx: hole.residualPx, edgeInliers: hole.inliers,
       sizes: sizeRange(diameterMm, u.total), overlay: { markerQuad: quad, innerBoundary, scaleBar }, timings, totalMs: total(),
     }
   } catch (e) {
-    return reject('INTERNAL_ERROR', `internal error: ${errorMessage(cv, e)}`, quad ? { markerQuad: quad } : {})
+    return reject('INTERNAL_ERROR', `internal error: ${errorMessage(cv, e)}`, quad ? { markerQuad: quad } : {}, blur)
   } finally { R?.delete(); gray?.delete() }
 }

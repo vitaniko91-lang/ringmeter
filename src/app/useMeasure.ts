@@ -34,7 +34,12 @@ export function useMeasure() {
   }
   const fail = (detail: string) =>
     finish({ ok: false, code: 'INTERNAL_ERROR', hint: REJECT_HINT.INTERNAL_ERROR, detail, overlay: {}, timings: {}, totalMs: 0 }, undefined, {})
-  const arm = (ms = WATCHDOG_MS) => { clearTimeout(watchdog.current); watchdog.current = window.setTimeout(() => fail(`timed out after ${ms / 1000} s`), ms) }
+  const arm = (ms = WATCHDOG_MS) => {
+    clearTimeout(watchdog.current)
+    // bump seq BEFORE dispatching: a worker reply that arrives after the timeout has already fired now carries a
+    // stale seq and is dropped by the onmessage handler instead of overwriting the timeout outcome.
+    watchdog.current = window.setTimeout(() => { seq.current += 1; fail(`timed out after ${ms / 1000} s`) }, ms)
+  }
 
   useEffect(() => {
     const w = new Worker(new URL('../worker/measure.worker.ts', import.meta.url), { type: 'module' })

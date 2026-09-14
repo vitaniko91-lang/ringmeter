@@ -51,6 +51,7 @@ export type Reject = {
   overlay: Overlay
   timings: Timings
   totalMs: number
+  blurScore?: number
 }
 
 export type Outcome = MeasureResult | Reject

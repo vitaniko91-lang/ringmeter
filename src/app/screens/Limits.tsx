@@ -1,4 +1,4 @@
-import { ASSUMED } from '../../cv/uncertainty'
+import { ASSUMED, TYPICAL_SIGMA_MM } from '../../cv/uncertainty'
 import { GATES } from '../../cv/gates'
 import { SIZING_SOURCE } from '../../sizing/sizing'
 import { RING_DIAMETER_MM } from '../../kit/kit-geometry'
@@ -19,7 +19,7 @@ export function Limits() {
         The ± combines three measured or assumed terms: edge localisation ({ASSUMED.edgePx} px), marker-corner error ({ASSUMED.cornerPx} px per side) and parallax from the ring's height —
         the visible inner rim sits ≈{ASSUMED.ringHeightMm} mm above the sheet, so it projects slightly larger, and any residual tilt below {ASSUMED.minTiltDeg}° cannot be detected and is assumed present.
         A cropped or zoomed photo breaks the distance estimate used for the parallax term.
-        Typical result: ±0.3 mm, i.e. about one EU size. The test set in the repository reports the observed error per photo; we never claim better than what was measured.
+        Typical result: ±{TYPICAL_SIGMA_MM} mm, i.e. about one EU size. The test set in the repository reports the observed error per photo; we never claim better than what was measured.
       </p>
       <h3 className="mt-4 font-semibold">Sizing table</h3>
       <p className="mt-1 text-muted">{SIZING_SOURCE.name} (<a className="underline" href={SIZING_SOURCE.url}>source</a>). {SIZING_SOURCE.formulas.eu}; {SIZING_SOURCE.formulas.us}; {SIZING_SOURCE.formulas.uk}. {SIZING_SOURCE.rounding}</p>

@@ -23,3 +23,4 @@
 | Review fixes — Tasks 10–11 | 23:43 | 00:40 | 57 |
 | Task 12 — test-set skeleton, evaluate runner, report builder | 00:43 | 01:08 | 25 |
 | Task 13 — README, delivery notes, video script, repo, deploy | 01:08 | 01:12 | 4 |
+| Review fixes — Tasks 12–13 | 01:41 | 03:37 | 116 |

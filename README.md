@@ -12,12 +12,18 @@ Live demo: https://ringmeter.vercel.app   ·   Ring Kit: `/ring-kit.pdf` (print 
 ## Test
     npm test           # Vitest (Node): sizing vs published anchors, gates, σ model, marker, ring, pipeline on synthetic images (≤ 0.1 mm), state, report builder
     npm run kit        # regenerate public/ring-kit.pdf, then render it at 300 dpi and assert: marker side 236 px at the stated position,
-                       # nothing inked inside the ring zone, measure(render) = NO_RING, coin circle Ø 27.2 ± 0.1 mm
+                       # nothing inked inside the ring zone (outside the four 5 mm corner ticks), measure(render) = NO_RING, coin circle Ø 27.2 ± 0.1 mm
     npm run evaluate   # after `npm run build`: Playwright drives the built app (?eval=1) over testset/photos → testset/RESULTS.md
                        # env: TESTSET_DIR, GROUND_TRUTH, RESULTS_OUT override the photo dir / ground-truth json / output path
 
+## Prerequisites
+- Node ≥ 20
+- `npx playwright install chromium` before `npm run evaluate`
+- poppler (`brew install poppler`) before `npm run kit`
+- Photos must be JPEG or PNG (an iPhone HEIC photo needs converting first)
+
 ## How it works
-1. The 15 MB engine (OpenCV.js, ~4 MB compressed) loads once per session in the worker — ~1.8 s measured on a laptop — before the first photo.
+1. The 15 MB engine (OpenCV.js, ~4 MB compressed) loads in the worker before the first photo. Engine init happens once per session; measured values are in `testset/RESULTS.md` and DELIVERY-NOTES. Photos longer than 4000 px are downscaled to 4000 before measurement.
 2. ArUco 4×4 (id 0) marker detected on a ≤ 1600 px copy; corners mapped back to full resolution.
 3. Gates: marker size (≥ 8 px/mm), skew (side ratio, corner angles), sharpness (Laplacian variance on the marker crop, normalised to marker size).
 4. Homography to a 10 px/mm plane (pre-blur when the source is denser than 15 px/mm); the ring zone is a fixed rectangle relative to the marker.

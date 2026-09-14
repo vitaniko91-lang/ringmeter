@@ -9,6 +9,7 @@ Ground truth method: real rings A, B measured with the printed gauge (±0.25 mm)
 - Tilt below ≈10° is not detectable from a 20 mm marker or a 17 mm hole; it is carried as an assumed ±5° term in σ.
 - Ring height (≈2 mm) makes the visible inner rim project larger — systematic +0.1–0.2 mm at 20–25 cm; not corrected, included in σ.
 - Glare bridging the hole to the outer paper breaks the "enclosed white blob" rule → NO_RING; retake in softer light.
+- [ ] Set `TYPICAL_SIGMA_MM` ≥ max observed |err| (Limits section) — check against `testset/RESULTS.md` before shipping.
 
 ## Time spent
 `docs/time-log.md` — total: (…) h. Physical steps (printing, photographing) listed separately.
@@ -17,12 +18,12 @@ Ground truth method: real rings A, B measured with the printed gauge (±0.25 mm)
 - Claude Code with Claude Opus 5 — planning, code, tests, this document. Reused components: OpenCV.js (`@techstark/opencv-js`, ArUco detector, contours, ellipse fit), pdf-lib, Vite/React/Tailwind, Playwright. Own code: sheet geometry, gates, radial refinement + consensus circle fit, uncertainty model, sizing mapping, UI, evaluation runner.
 - Examples of checking AI output:
   - The sizing constants the model first wrote (UK A = 37.8 mm) failed the anchor test against the published table; corrected to the cited definition (C = 40 mm, 1.25 mm per size). Five published anchor rows are pinned in `tests/sizing.test.ts`.
-  - The sub-pixel estimator's apparent +0.5 px bias was traced to OpenCV's disc rasterisation, fixed in the fixture, not the estimator; the estimator is unbiased (≤ 0.05 px) on analytic rings.
+  - The sub-pixel estimator's apparent ≈ +0.6 px bias was traced to OpenCV's disc rasterisation, fixed in the fixture, not the estimator; the shipped tests pin ≤ 0.1 mm diameter error and ≤ 0.3 px residual on synthetic rings.
 
 ## Measured speed and cost
-- Time to a useful result: (mean / max from RESULTS.md) on Chromium desktop; on the phone (model): (measured from the Timings panel on 3 photos). Engine init, once per session: (…) ms desktop / (…) ms phone.
+- Time to a useful result: mean AND max (both come from `testset/RESULTS.md`, "measured photos" summary line) on Chromium desktop; on the phone (model): (measured from the Timings panel on 3 photos). Engine init, once per session: (…) ms desktop / (…) ms phone.
 - Variable cost per image: $0.00 — no API calls, no upload; recognition, reasoning, speech, retries, paid intermediaries: none used.
-- Hosting: static site on Vercel Hobby ($0) — Pro $20/month if a custom domain / team is required. Bandwidth: ~4 MB compressed one-time engine download per new visitor.
+- Hosting: static site on Vercel Hobby ($0, non-commercial use; custom domains allowed) — Pro $20/month for commercial use or a team. Bandwidth: ~4 MB compressed one-time engine download per new visitor.
 - Pricing assumptions: Vercel public pricing as of 2026-09; no free credits involved.
 
 ## What I would improve next
