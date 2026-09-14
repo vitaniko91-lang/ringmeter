@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { markerGeometry, markerGates, blurGate, ellipseGate, GATES } from '../src/cv/gates'
+import { markerGeometry, markerGates, blurGate, ellipseGate, edgeGate, GATES } from '../src/cv/gates'
 import type { Quad } from '../src/cv/types'
 
 const square = (s: number): Quad => [[100, 100], [100 + s, 100], [100 + s, 100 + s], [100, 100 + s]]
@@ -18,4 +18,8 @@ describe('gates', () => {
   it('rejects TILT on a sheared marker with equal sides', () => expect(markerGates([[100, 100], [300, 100], [335, 297], [135, 297]])).toBe('TILT'))
   it('rejects BLUR below the threshold', () => { expect(blurGate(GATES.BLUR_MIN_SCORE - 1)).toBe('BLUR'); expect(blurGate(GATES.BLUR_MIN_SCORE + 1)).toBeNull() })
   it('rejects ELLIPTIC below the axes ratio', () => { expect(ellipseGate(0.97)).toBe('ELLIPTIC'); expect(ellipseGate(0.995)).toBeNull() })
+  it('rejects EDGE_UNCLEAR on a loose residual or too few inliers', () => {
+    expect(edgeGate(GATES.EDGE_MAX_RESIDUAL_PX + 0.01, 64)).toBe('EDGE_UNCLEAR'); expect(edgeGate(0.2, GATES.EDGE_MIN_INLIERS - 1)).toBe('EDGE_UNCLEAR')
+    expect(edgeGate(GATES.EDGE_MAX_RESIDUAL_PX, GATES.EDGE_MIN_INLIERS)).toBeNull()
+  })
 })

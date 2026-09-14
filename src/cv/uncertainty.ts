@@ -4,13 +4,14 @@ import { MARKER_MM } from '../kit/kit-geometry'
 export const ASSUMED = {
   ringHeightMm: 2.0,   // typical band height 1.5–2.5 mm; the visible inner rim sits this far above the sheet
   minTiltDeg: 5,       // tilt below this is not resolvable from the hole ellipse — assumed present
-  focalFraction: 0.7,  // f_px ≈ 0.7 × image width for phone main cameras (24–28 mm equivalent)
+  focalFraction: 0.7,  // f_px ≈ 0.7 × the image's long side for phone main cameras (24–28 mm equivalent)
   edgePx: 1.0,         // residual edge-localisation error after sub-pixel refinement, in source px
   cornerPx: 0.5,       // ArUco corner error per side, in source px
 } as const
 
-export function estimateDistanceMm(imageWidthPx: number, markerSidePx: number) {
-  return (ASSUMED.focalFraction * imageWidthPx * MARKER_MM) / markerSidePx
+/** Camera-to-sheet distance from the marker's apparent size: f_px ≈ focalFraction × long side, D = f_px · 20 mm / side. */
+export function estimateDistanceMm(longSidePx: number, markerSidePx: number) {
+  return (ASSUMED.focalFraction * longSidePx * MARKER_MM) / markerSidePx
 }
 
 /** Precondition: marker gates passed (markerSidePx, pxPerMm, distanceMm > 0). */

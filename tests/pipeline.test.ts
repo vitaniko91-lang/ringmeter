@@ -4,6 +4,7 @@ import { renderSynthetic } from '../src/cv/synthetic'
 import { toGray, grayToImageLike } from '../src/cv/image'
 import { detectMarker } from '../src/cv/marker'
 import { measure, blurScore, preBlurSigma, canonFootprint, DETECT_MAX_SIDE } from '../src/cv/pipeline'
+import { uncertainty, estimateDistanceMm } from '../src/cv/uncertainty'
 import { SYN_RING_CENTER_MM } from '../src/cv/synthetic'
 
 let cv: CV
@@ -15,7 +16,10 @@ describe('measure()', () => {
     if (!o.ok) throw new Error(`rejected: ${o.code} ${o.detail}`)
     expect(Math.abs(o.diameterMm - 17.3)).toBeLessThan(0.1)
     expect(o.sizes.nominal).toEqual({ eu: 54.5, us: 7, uk: 'N½' })
-    expect(o.sigmaMm).toBeGreaterThan(0); expect(o.sigmaMm).toBeLessThan(0.6)
+    // σ is the documented formula over the reported inputs, with the distance estimated from the frame's long side.
+    // σ ≈ 0.6 here only because the 1400 px fixture implies D ≈ 86 mm (82 mm untilted); a 4000 px phone frame gives ≈ 0.34.
+    expect(o.sigmaMm).toBeGreaterThan(0)
+    expect(o.sigmaMm).toBeCloseTo(uncertainty({ diameterMm: o.diameterMm, pxPerMm: o.pxPerMm, markerSidePx: o.markerSidePx, distanceMm: estimateDistanceMm(1400, o.markerSidePx), tiltDeg: o.tiltDeg }).total, 3)
     expect(Object.keys(o.timings)).toEqual(['decode', 'marker', 'gates', 'rectify', 'ring', 'result'])
     expect(o.overlay.innerBoundary).toHaveLength(64)
     expect(o.overlay.markerQuad).toHaveLength(4)
@@ -53,7 +57,8 @@ describe('measure()', () => {
   it('EDGE_UNCLEAR when a shadow crescent displaces part of the inner rim', () => {
     // A 120° dark arc 2.5 px inside the true rim (thickness 3, gray 140) keeps the hole's outer contour
     // circular — the coarse blob survives — but the rays inside the arc lock onto the shadow's edge instead
-    // of the rim, ~3 canonical px short of it, which MAD alone cannot clean up.
+    // of the rim, ≈ 4.9 canonical px short of it (a thick AA ellipse renders wider than nominal), which MAD
+    // alone cannot clean up.
     const { image } = renderSynthetic(cv)
     const gray = toGray(cv, image)
     const cx = (15 + 60) * 12 - 0.5, cy = (30 + 10) * 12 - 0.5 // ring centre, source px (origin 15,30 mm; centre 60,10 mm; 12 px/mm)

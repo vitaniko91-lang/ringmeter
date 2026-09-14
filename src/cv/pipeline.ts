@@ -3,7 +3,7 @@ import type { ImageLike, Outcome, Overlay, Pt, Quad, Reject, RejectCode, Timings
 import { REJECT_HINT } from './types'
 import { toGray } from './image'
 import { detectMarker } from './marker'
-import { markerGates, markerGeometry, blurGate, ellipseGate, GATES } from './gates'
+import { markerGates, markerGeometry, blurGate, ellipseGate, edgeGate, GATES } from './gates'
 import { rectify, canonToSource, type Rectified } from './rectify'
 import { findHoleCandidates, refineHole } from './ring'
 import { uncertainty, estimateDistanceMm } from './uncertainty'
@@ -11,10 +11,13 @@ import { sizeRange } from '../sizing/sizing'
 import { CANON_PX_PER_MM, CANON_SIZE_PX, MARKER_CANON_PX, MARKER_MM, mmToCanon } from '../kit/kit-geometry'
 
 export const DETECT_MAX_SIDE = 1600   // marker detection runs on a downscaled copy; measurement on full resolution
-export const EDGE = { MAX_RESIDUAL_PX: 0.6, MIN_INLIERS: 48 } as const // radial refinement must agree on ≥ 48 of 64 rays within 0.6 px RMS
 const PRE_BLUR_RATIO = 1.5            // source denser than 1.5 × canonical (15 px/mm) is low-passed before the warp
 
-/** Laplacian variance of the marker crop (bbox + 50 %), resized to 200 px wide so the score is scale-invariant. */
+/**
+ * Laplacian variance of the marker crop (bbox + 50 %), normalised to marker size: the crop is resized to 200 px wide,
+ * so the score measures blur in mm, not px. Sensor noise on small far-away crops inflates it — calibrate the threshold
+ * with a noisy fixture, not only with the synthetic.
+ */
 export function blurScore(cv: CV, gray: any, quad: Quad): number {
   const xs = quad.map((p) => p[0]), ys = quad.map((p) => p[1])
   const w = Math.max(...xs) - Math.min(...xs), h = Math.max(...ys) - Math.min(...ys)
@@ -117,15 +120,15 @@ export function measure(cv: CV, image: ImageLike): Outcome {
     const hole = refineHole(cv, R.canon, cands[0])
     lap('ring')
     const innerBoundary = canonToSource(cv, R.Hinv, hole.points)
-    if (hole.residualPx > EDGE.MAX_RESIDUAL_PX || hole.inliers < EDGE.MIN_INLIERS)
-      return reject('EDGE_UNCLEAR', `edge residual ${hole.residualPx.toFixed(2)} px, ${hole.inliers}/64 inliers`, { markerQuad: quad, innerBoundary })
+    const g3 = edgeGate(hole.residualPx, hole.inliers)
+    if (g3) return reject(g3, `edge residual ${hole.residualPx.toFixed(2)} px, ${hole.inliers}/64 inliers`, { markerQuad: quad, innerBoundary })
     const tiltDeg = (Math.acos(Math.min(1, hole.axesRatio)) * 180) / Math.PI
-    const g3 = ellipseGate(hole.axesRatio)
-    if (g3) return reject(g3, `hole axes ratio ${hole.axesRatio.toFixed(3)} (tilt ≈ ${tiltDeg.toFixed(0)}°)`, { markerQuad: quad, innerBoundary })
+    const g4 = ellipseGate(hole.axesRatio)
+    if (g4) return reject(g4, `hole axes ratio ${hole.axesRatio.toFixed(3)} (tilt ≈ ${tiltDeg.toFixed(0)}°)`, { markerQuad: quad, innerBoundary })
 
     // 5. numbers
     const diameterMm = (2 * hole.r) / CANON_PX_PER_MM
-    const estDistanceMm = estimateDistanceMm(gray.cols, geo.sidePx)
+    const estDistanceMm = estimateDistanceMm(Math.max(gray.cols, gray.rows), geo.sidePx)
     const u = uncertainty({ diameterMm, pxPerMm: geo.pxPerMm, markerSidePx: geo.sidePx, distanceMm: estDistanceMm, tiltDeg })
     const b0 = mmToCanon({ x: 0, y: MARKER_MM + 3 }), b1 = mmToCanon({ x: 10, y: MARKER_MM + 3 })
     const scaleBar = canonToSource(cv, R.Hinv, [[b0.x, b0.y], [b1.x, b1.y]]) as [Pt, Pt]

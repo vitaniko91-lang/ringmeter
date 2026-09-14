@@ -7,6 +7,8 @@ export const GATES = {
   MAX_ANGLE_DEV_DEG: 5,    // marker corner angles vs 90°
   BLUR_MIN_SCORE: 60,      // Laplacian variance on the marker crop normalised to 200 px — CALIBRATED in Task 13
   MIN_AXES_RATIO: 0.985,   // hole ellipse minor/major — fine tilt check (~10°)
+  EDGE_MAX_RESIDUAL_PX: 0.6, // RMS radial residual of the inlier rays against the final circle, canonical px
+  EDGE_MIN_INLIERS: 48,    // rays (of 64) that must agree on the inner rim
 } as const
 
 export function sideLengths(q: Quad): number[] {
@@ -39,3 +41,5 @@ export function markerGates(q: Quad): RejectCode | null {
 }
 export const blurGate = (score: number): RejectCode | null => (score < GATES.BLUR_MIN_SCORE ? 'BLUR' : null)
 export const ellipseGate = (axesRatio: number): RejectCode | null => (axesRatio < GATES.MIN_AXES_RATIO ? 'ELLIPTIC' : null)
+export const edgeGate = (residualPx: number, inliers: number): RejectCode | null =>
+  (residualPx > GATES.EDGE_MAX_RESIDUAL_PX || inliers < GATES.EDGE_MIN_INLIERS ? 'EDGE_UNCLEAR' : null)
