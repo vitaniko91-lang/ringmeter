@@ -10,6 +10,15 @@ import { SYN_RING_CENTER_MM } from '../src/cv/synthetic'
 let cv: CV
 beforeAll(async () => { cv = await loadCv() })
 
+/** Default synthetic with a dark shadow arc (gray 140, thickness 3) 2.5 px inside the inner rim, spanning `deg` from 0°. */
+function withShadowArc(deg: number) {
+  const gray = toGray(cv, renderSynthetic(cv).image)
+  const cx = (15 + 60) * 12 - 0.5, cy = (30 + 10) * 12 - 0.5 // ring centre, source px (origin 15,30 mm; centre 60,10 mm; 12 px/mm)
+  const rIn = (17.3 / 2) * 12 // inner rim radius, source px
+  cv.ellipse(gray, new cv.Point(cx, cy), new cv.Size(rIn - 2.5, rIn - 2.5), 0, 0, deg, new cv.Scalar(140), 3, cv.LINE_AA)
+  try { return grayToImageLike(cv, gray) } finally { gray.delete() }
+}
+
 describe('measure()', () => {
   it('measures a 17.30 mm ring within 0.1 mm and reports sizes, timings, overlay', () => {
     const o = measure(cv, renderSynthetic(cv, { tilt: 'mild', blurPx: 5 }).image)
@@ -59,15 +68,23 @@ describe('measure()', () => {
     // circular — the coarse blob survives — but the rays inside the arc lock onto the shadow's edge instead
     // of the rim, ≈ 4.9 canonical px short of it (a thick AA ellipse renders wider than nominal), which MAD
     // alone cannot clean up.
-    const { image } = renderSynthetic(cv)
-    const gray = toGray(cv, image)
-    const cx = (15 + 60) * 12 - 0.5, cy = (30 + 10) * 12 - 0.5 // ring centre, source px (origin 15,30 mm; centre 60,10 mm; 12 px/mm)
-    const rIn = (17.3 / 2) * 12 // inner rim radius, source px
-    cv.ellipse(gray, new cv.Point(cx, cy), new cv.Size(rIn - 2.5, rIn - 2.5), 0, 0, 120, new cv.Scalar(140), 3, cv.LINE_AA)
-    const o = measure(cv, grayToImageLike(cv, gray))
-    gray.delete()
+    const o = measure(cv, withShadowArc(120))
     expect(o.ok).toBe(false)
     if (!o.ok) { expect(o.code).toBe('EDGE_UNCLEAR'); expect(o.overlay.innerBoundary).toHaveLength(64) }
+  })
+  describe('partial shadows (RANSAC-lite consensus before MAD)', () => {
+    const inliersOf = (detail: string) => Number(/(\d+)\/64 inliers/.exec(detail)?.[1])
+    it('a 60° shadow arc is measured within 0.1 mm on the 48–58 rays that agree', () => {
+      const o = measure(cv, withShadowArc(60))
+      if (!o.ok) throw new Error(`rejected: ${o.code} ${o.detail}`)
+      expect(Math.abs(o.diameterMm - 17.3)).toBeLessThan(0.1)
+      expect(o.edgeInliers).toBeGreaterThanOrEqual(48); expect(o.edgeInliers).toBeLessThanOrEqual(58)
+    })
+    it('a 120° shadow arc is still EDGE_UNCLEAR: the consensus set is ≈ 42 rays, below the 48 floor', () => {
+      const o = measure(cv, withShadowArc(120))
+      expect(o.ok).toBe(false)
+      if (!o.ok) { expect(o.code).toBe('EDGE_UNCLEAR'); expect(inliersOf(o.detail)).toBeLessThan(48); expect(inliersOf(o.detail)).toBeGreaterThanOrEqual(38) }
+    })
   })
   it('every reject carries the full timings prefix up to the failing stage', () => {
     const o = measure(cv, renderSynthetic(cv, { innerMm: null }).image)

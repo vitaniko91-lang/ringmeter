@@ -54,11 +54,15 @@ export function findHoleCandidates(cv: CV, canon: any): HoleCandidate[] {
 export type RefinedHole = {
   cx: number; cy: number; r: number; axesRatio: number
   points: Pt[]        // all 64 sampled edge points (before outlier rejection)
-  inliers: number     // how many of them survived the MAD rejection and fed the final fit
+  inliers: number     // how many of them survived the consensus + MAD rejection and fed the final fit
   residualPx: number  // RMS radial residual of the inliers against the final fit
 }
 
 const RAYS = 64, WINDOW_PX = 8, STEP_PX = 0.25
+// RANSAC-lite: deterministic minimal subsets (rays k, k+d1, k+d1+d2) for every k — 320 candidate circles at
+// ≈ 90° / 120° / mixed spacings — scored by how many rays sit within CONSENSUS_TOL_PX of them.
+const CONSENSUS_SPACINGS = [[16, 16], [16, 32], [21, 21], [10, 22], [12, 30]] as const
+const CONSENSUS_TOL_PX = 0.75
 
 const det3 = (m: number[]) => m[0] * (m[4] * m[8] - m[5] * m[7]) - m[1] * (m[3] * m[8] - m[5] * m[6]) + m[2] * (m[3] * m[7] - m[4] * m[6])
 
@@ -73,6 +77,36 @@ function fitCircle(pts: Pt[]) {
   const c = det3([Sxx, Sxy, -Sxz, Sxy, Syy, -Syz, Sx, Sy, -Sz]) / D
   const cx = -a / 2, cy = -b / 2
   return { cx, cy, r: Math.sqrt(cx * cx + cy * cy - c) }
+}
+
+/** Circle through three points — the two perpendicular bisectors intersected in closed form; null if (near-)collinear. */
+function circleThrough(a: Pt, b: Pt, c: Pt) {
+  const d = 2 * (a[0] * (b[1] - c[1]) + b[0] * (c[1] - a[1]) + c[0] * (a[1] - b[1]))
+  if (Math.abs(d) < 1e-9) return null
+  const A = a[0] * a[0] + a[1] * a[1], B = b[0] * b[0] + b[1] * b[1], C = c[0] * c[0] + c[1] * c[1]
+  const cx = (A * (b[1] - c[1]) + B * (c[1] - a[1]) + C * (a[1] - b[1])) / d
+  const cy = (A * (c[0] - b[0]) + B * (a[0] - c[0]) + C * (b[0] - a[0])) / d
+  return { cx, cy, r: Math.hypot(a[0] - cx, a[1] - cy) }
+}
+
+/**
+ * Kåsa fit on the largest consensus set found by the minimal-subset search (ties → the first subset). A clustered
+ * outlier run — a 60–120° shadow arc — drags an all-points fit until its residuals smooth out and MAD rejects nothing;
+ * starting the MAD passes from a fit the good rays agree on keeps the shadow rays out.
+ */
+function consensusFit(pts: Pt[]) {
+  const n = pts.length
+  const within = (f: { cx: number; cy: number; r: number }, [x, y]: Pt) => Math.abs(Math.hypot(x - f.cx, y - f.cy) - f.r) <= CONSENSUS_TOL_PX
+  let best: { fit: { cx: number; cy: number; r: number }; count: number } | null = null
+  for (const [d1, d2] of CONSENSUS_SPACINGS) for (let k = 0; k < n; k++) {
+    const f = circleThrough(pts[k], pts[(k + d1) % n], pts[(k + d1 + d2) % n])
+    if (!f) continue
+    let count = 0
+    for (const p of pts) if (within(f, p)) count++
+    if (!best || count > best.count) best = { fit: f, count }
+  }
+  if (!best || best.count < 3) return fitCircle(pts)
+  return fitCircle(pts.filter((p) => within(best!.fit, p)))
 }
 
 /** Walk 64 rays outward from the coarse centre; the inner rim is the strongest bright→dark step. */
@@ -99,9 +133,10 @@ export function refineHole(cv: CV, canon: any, c: HoleCandidate): RefinedHole {
       const r = rs[bi] + Math.max(-1, Math.min(1, off)) * STEP_PX
       pts.push([c.cx + ux * r, c.cy + uy * r])
     }
-    // Two passes of MAD outlier rejection; the second pass re-scores every ray against the refit. The median
-    // threshold guarantees at least half of the rays survive each pass, so the refit always has ≥ 32 points.
-    let fit = fitCircle(pts), keep = pts
+    // Consensus fit first, then two passes of MAD outlier rejection; the second pass re-scores every ray against the
+    // refit. The median threshold guarantees at least half of the rays survive each pass, so the refit always has
+    // ≥ 32 points.
+    let fit = consensusFit(pts), keep = pts
     for (let pass = 0; pass < 2; pass++) {
       const res = pts.map(([x, y]) => Math.hypot(x - fit.cx, y - fit.cy) - fit.r)
       const mad = res.map(Math.abs).sort((a, b) => a - b)[res.length >> 1]

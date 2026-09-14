@@ -17,3 +17,4 @@
 | Task 9 — Ring Kit PDF + render check | 22:20 | 22:23 | 3 |
 | Review fixes — Task 8 | 22:32 | 22:41 | 9 |
 | Review fixes — Task 8 (EDGE_UNCLEAR test) | 22:43 | 22:47 | 4 |
+| Review fixes — Tasks 8–9 | 23:03 | 23:13 | 10 |
