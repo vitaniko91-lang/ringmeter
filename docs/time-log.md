@@ -9,3 +9,4 @@
 | Task 4 — uncertainty model | 19:56 | 19:57 | 1 |
 | Task 2 — sizing amendment | 19:57 | 20:00 | 3 |
 | Review fixes — Tasks 0–4 | 20:00 | 20:17 | 17 |
+| Task 5 — opencv loader, synthetic, marker | 20:18 | 20:22 | 4 |
