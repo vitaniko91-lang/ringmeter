@@ -1,0 +1,22 @@
+import { MARKER_MM } from '../kit/kit-geometry'
+
+/** Stated assumptions — printed in the UI limits section and in DELIVERY-NOTES. */
+export const ASSUMED = {
+  ringHeightMm: 2.0,   // typical band height 1.5–2.5 mm; the visible inner rim sits this far above the sheet
+  minTiltDeg: 5,       // tilt below this is not resolvable from the hole ellipse — assumed present
+  focalFraction: 0.7,  // f_px ≈ 0.7 × image width for phone main cameras (24–28 mm equivalent)
+  edgePx: 1.0,         // residual edge-localisation error after sub-pixel refinement, in source px
+  cornerPx: 0.5,       // ArUco corner error per side, in source px
+}
+
+export function estimateDistanceMm(imageWidthPx: number, markerSidePx: number) {
+  return (ASSUMED.focalFraction * imageWidthPx * MARKER_MM) / markerSidePx
+}
+
+export function uncertainty(a: { diameterMm: number; pxPerMm: number; markerSidePx: number; distanceMm: number; tiltDeg: number }) {
+  const px = ASSUMED.edgePx / a.pxPerMm
+  const marker = (a.diameterMm * ASSUMED.cornerPx) / a.markerSidePx
+  const tilt = (Math.max(a.tiltDeg, ASSUMED.minTiltDeg) * Math.PI) / 180
+  const parallax = (a.diameterMm * ASSUMED.ringHeightMm) / a.distanceMm + ASSUMED.ringHeightMm * Math.tan(tilt)
+  return { px, marker, parallax, total: Math.hypot(px, marker, parallax) }
+}
