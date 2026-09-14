@@ -19,3 +19,4 @@
 | Review fixes — Task 8 (EDGE_UNCLEAR test) | 22:43 | 22:47 | 4 |
 | Review fixes — Tasks 8–9 | 23:03 | 23:13 | 10 |
 | Task 10 — worker bridge, state machine, upload/processing | 23:15 | 23:22 | 7 |
+| Task 11 — result, reject, overlay, landing, instructions, limits | 23:22 | 23:29 | 7 |
