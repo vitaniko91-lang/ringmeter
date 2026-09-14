@@ -14,3 +14,4 @@
 | Task 7 — radial refinement + circle fit | 20:23 | 20:25 | 2 |
 | Review fixes — Tasks 5–7 | 21:54 | 22:07 | 13 |
 | Task 8 — measure() pipeline | 22:12 | 22:20 | 8 |
+| Task 9 — Ring Kit PDF + render check | 22:20 | 22:23 | 3 |
