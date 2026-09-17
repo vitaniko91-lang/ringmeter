@@ -2,7 +2,7 @@
 
 Phone-friendly web page that estimates a ring's inner diameter from a photo taken over a printed calibration sheet (20 mm ArUco marker). Everything runs on-device in a Web Worker (OpenCV.js WASM); nothing is uploaded.
 
-Live demo: https://ringmeter.vercel.app   ·   Ring Kit: `/ring-kit.pdf` (print at 100 %, check the scale with the coin circle)
+Live demo: https://ringmeter.vercel.app   ·   Ring Kit: `/ring-kit.pdf` (print at 100 %, check the scale with the coin circle)   ·   no printer: `/screen-kit.html` on a spare phone (calibrate once against a bank card, then it shows the same 20 mm marker, ring zone and a stepping gauge)
 
 ## Run
     npm i
@@ -13,6 +13,7 @@ Live demo: https://ringmeter.vercel.app   ·   Ring Kit: `/ring-kit.pdf` (print 
     npm test           # Vitest (Node): sizing vs published anchors, gates, σ model, marker, ring, pipeline on synthetic images (≤ 0.1 mm), state, report builder
     npm run kit        # regenerate public/ring-kit.pdf, then render it at 300 dpi and assert: marker side 236 px at the stated position,
                        # nothing inked inside the ring zone (outside the four 5 mm corner ticks), measure(render) = NO_RING, coin circle Ø 27.2 ± 0.1 mm
+    npm run kit:screen # build, then render screen-kit.html at DPR 3 in both orientations and run the same three checks on the screenshot
     npm run evaluate   # after `npm run build`: Playwright drives the built app (?eval=1) over testset/photos → testset/RESULTS.md
                        # env: TESTSET_DIR, GROUND_TRUTH, RESULTS_OUT override the photo dir / ground-truth json / output path
 

@@ -10,6 +10,7 @@ export function Landing() {
         <li><span className="num font-semibold">3</span> Photograph from directly above, 15–25 cm away</li>
       </ol>
       <a href="/ring-kit.pdf" download className="mt-5 flex min-h-12 items-center justify-center rounded-md bg-ink px-6 font-semibold text-paper">Download Ring Kit (PDF, A4)</a>
+      <p className="mt-3 text-sm text-muted">No printer? Open <a className="underline" href="/screen-kit.html">the screen kit</a> on a second phone: calibrate it once against a bank card, and it shows the same marker.</p>
     </header>
   )
 }

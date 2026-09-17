@@ -19,7 +19,7 @@ const READY_TIMEOUT_MS = Number(process.env.READY_TIMEOUT_MS ?? 180_000)   // al
 const REJECT_CODES = Object.keys(REJECT_HINT)
 
 type GroundTruth = {
-  status: string; recordedAt: string; printScaleCheck: string
+  status: string; recordedAt: string; scaleCheck: string; kit?: string
   objects: Record<string, { kind: string; truthMm: number | null; method?: string; uncertaintyMm?: number }>
   photos: { file: string; object: string | null; expect: string }[]
 }
@@ -81,7 +81,7 @@ try {
   server.kill()   // independent of browser.close(): the preview server must go down even if closing the browser throws
   try { await browser?.close() } catch { /* best effort — nothing left to report to */ }
 }
-const report = buildReport(rows, { recordedAt: gt.recordedAt, printScaleCheck: gt.printScaleCheck, engineInitMs })
+const report = buildReport(rows, { recordedAt: gt.recordedAt, scaleCheck: gt.scaleCheck, kit: gt.kit, engineInitMs })
 writeFileSync(OUT, report.markdown)
 console.log(`${OUT} written`)
 console.log(report.summary)

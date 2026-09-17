@@ -1,16 +1,29 @@
 {
-  "status": "TEMPLATE — fill truthMm/method/printScaleCheck in Task 14 and commit BEFORE the first evaluate run",
+  "status": "TEMPLATE — fill truthMm/method/scaleCheck in Task 14 and commit BEFORE the first evaluate run",
   "recordedAt": "",
-  "printScaleCheck": "",
+  "scaleCheck": "",
+  "kit": "screen-kit.html on a spare phone (device: …), calibrated against an ID-1 bank card long edge (85.60 mm): … CSS px/mm",
   "objects": {
-    "A": { "kind": "ring", "truthMm": null, "method": "printed gauge 15.0–22.0 / 0.5 mm: largest circle fully visible inside = L, smallest circle the ring covers = U → (L+U)/2", "uncertaintyMm": 0.25 },
-    "B": { "kind": "ring", "truthMm": null, "method": "printed gauge, same as A", "uncertaintyMm": 0.25 },
-    "C": { "kind": "cut-out", "truthMm": 18.0, "method": "circle printed at 18.00 mm on the kit with a 0.15 mm stroke, cut through the middle of the line with scissors; print scale verified with the Rp 500 coin circle", "uncertaintyMm": 0.15 }
+    "A": {
+      "kind": "ring",
+      "truthMm": null,
+      "method": "on-screen gauge (screen-kit.html, circle stepped 0.1 mm): largest circle fully visible inside = L, smallest circle the ring covers = U → (L+U)/2",
+      "uncertaintyMm": 0.25
+    },
+    "B": {
+      "kind": "ring",
+      "truthMm": null,
+      "method": "on-screen gauge, same as A",
+      "uncertaintyMm": 0.25
+    }
   },
   "photos": [
-    { "file": "A-15cm.jpg", "object": "A", "expect": "MEASURE" }, { "file": "A-20cm.jpg", "object": "A", "expect": "MEASURE" }, { "file": "A-25cm.jpg", "object": "A", "expect": "MEASURE" },
-    { "file": "B-15cm.jpg", "object": "B", "expect": "MEASURE" }, { "file": "B-20cm.jpg", "object": "B", "expect": "MEASURE" }, { "file": "B-25cm.jpg", "object": "B", "expect": "MEASURE" },
-    { "file": "C-15cm.jpg", "object": "C", "expect": "MEASURE" }, { "file": "C-20cm.jpg", "object": "C", "expect": "MEASURE" }, { "file": "C-25cm.jpg", "object": "C", "expect": "MEASURE" },
+    { "file": "A-15cm.jpg", "object": "A", "expect": "MEASURE" },
+    { "file": "A-20cm.jpg", "object": "A", "expect": "MEASURE" },
+    { "file": "A-25cm.jpg", "object": "A", "expect": "MEASURE" },
+    { "file": "B-15cm.jpg", "object": "B", "expect": "MEASURE" },
+    { "file": "B-20cm.jpg", "object": "B", "expect": "MEASURE" },
+    { "file": "B-25cm.jpg", "object": "B", "expect": "MEASURE" },
     { "file": "U-two-rings.jpg", "object": null, "expect": "MULTIPLE_RINGS" },
     { "file": "U-no-marker.jpg", "object": null, "expect": "NO_MARKER" },
     { "file": "U-tilt40.jpg", "object": "A", "expect": "TILT" },

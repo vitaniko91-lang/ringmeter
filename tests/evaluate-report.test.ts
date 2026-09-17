@@ -11,7 +11,7 @@ const rows: EvalRow[] = [
 
 describe('buildReport', () => {
   it('computes errors, within-tolerance, pass marks and the summary', () => {
-    const r = buildReport(rows, { recordedAt: '2026-09-15', printScaleCheck: 'coin fits', engineInitMs: 1834 })
+    const r = buildReport(rows, { recordedAt: '2026-09-15', scaleCheck: 'coin fits', engineInitMs: 1834 })
     expect(TOL_MM).toBe(0.5)
     expect(r.summary).toMatchObject({
       measuredWithTruth: 2, maxAbsErrMm: 0.9, meanAbsErrMm: 0.53, passed: 3, total: 4,
@@ -36,14 +36,14 @@ describe('buildReport', () => {
     expect(noMarkerLine.split('|').map((c) => c.trim()).at(-6)).toBe('—') // within-tol cell for a non-MEASURE row
   })
   it('handles a run with no measured photos and no engine timing', () => {
-    const r = buildReport([rows[1]], { recordedAt: '2026-09-15', printScaleCheck: '', engineInitMs: null })
+    const r = buildReport([rows[1]], { recordedAt: '2026-09-15', scaleCheck: '', engineInitMs: null })
     expect(r.summary).toMatchObject({ measuredWithTruth: 0, maxAbsErrMm: null, meanAbsErrMm: null, passed: 1, total: 1, withinTol: '0/0', meanMs: null, rejectMeanMs: 120 })
     expect(r.markdown).toContain('max **— mm**')
     expect(r.markdown).toContain('engine init on this machine: — ms')
   })
   it('renders — instead of a real timing for a reject that never reached the pipeline (totalMs 0)', () => {
     const zero: EvalRow = { file: 'U-watchdog.jpg', object: null, truthMm: null, measuredMm: null, sigmaMm: null, sizes: null, verdict: 'INTERNAL_ERROR', expect: 'MEASURE', totalMs: 0, wallMs: 30000, blurScore: null, detail: 'timed out after 30 s' }
-    const r = buildReport([zero], { recordedAt: '2026-09-15', printScaleCheck: '', engineInitMs: null })
+    const r = buildReport([zero], { recordedAt: '2026-09-15', scaleCheck: '', engineInitMs: null })
     const line = r.markdown.split('\n').find((l) => l.startsWith('| U-watchdog.jpg'))!
     const cells = line.split('|').map((c) => c.trim())
     expect(cells.at(-5)).toBe('—') // time ms
@@ -52,7 +52,7 @@ describe('buildReport', () => {
   })
   it('escapes a pipe and a newline inside detail so the markdown table does not break', () => {
     const dirty: EvalRow = { file: 'U-dirty.jpg', object: null, truthMm: null, measuredMm: null, sigmaMm: null, sizes: null, verdict: 'NO_RING', expect: 'MEASURE', totalMs: 50, wallMs: 90, blurScore: 30, detail: 'a | pipe\nand a newline' }
-    const r = buildReport([dirty], { recordedAt: '2026-09-15', printScaleCheck: '', engineInitMs: null })
+    const r = buildReport([dirty], { recordedAt: '2026-09-15', scaleCheck: '', engineInitMs: null })
     expect(r.markdown).toContain('a \\| pipe and a newline')
     expect(r.markdown).not.toContain('a | pipe\nand a newline')
   })

@@ -7,6 +7,7 @@ export function Instructions() {
         <li>Put the sheet on a flat table. Place <strong>one ring</strong> flat inside the four teal corners, not on the marker.</li>
         <li>Hold the phone <strong>parallel to the sheet, directly above</strong>, 15–25 cm away. Keep the whole marker and the ring in frame.</li>
         <li>Daylight or room light from the side; avoid a shadow or flash glare across the ring. Tap the ring to focus.</li>
+        <li><strong>Screen kit instead of paper:</strong> second phone flat on the table, full brightness, wiped clean; the ring lies on the glass inside the corners. Flash off — it reflects in the glass.</li>
       </ul>
     </section>
   )

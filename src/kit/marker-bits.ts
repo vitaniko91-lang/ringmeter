@@ -11,3 +11,15 @@ export function markerBits(cv: CV): boolean[][] {
     return bits
   } finally { mk.delete(); dict.delete() }
 }
+/**
+ * The same 6×6 pattern as a constant, for renderers that must not load OpenCV (the on-screen kit runs on a spare
+ * phone). tests/marker-bits.test.ts asserts it equals markerBits(cv), so it cannot drift from the detector's dictionary.
+ */
+export const MARKER_BITS: readonly (readonly boolean[])[] = [
+  [1, 1, 1, 1, 1, 1],
+  [1, 0, 1, 0, 0, 1],
+  [1, 1, 0, 1, 0, 1],
+  [1, 1, 1, 0, 0, 1],
+  [1, 1, 1, 0, 1, 1],
+  [1, 1, 1, 1, 1, 1],
+].map((r) => r.map((b) => b === 1))

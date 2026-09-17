@@ -6,7 +6,7 @@ export type EvalRow = {
   sizes: SizeReading | null; verdict: string; expect: string; totalMs: number; wallMs: number; blurScore: number | null; detail: string
 }
 
-export type EvalMeta = { recordedAt: string; printScaleCheck: string; engineInitMs: number | null }
+export type EvalMeta = { recordedAt: string; scaleCheck: string; kit?: string; engineInitMs: number | null }
 
 /** Diameter error, in mm, at or below which a measured photo counts as "within tolerance" — the plan's failure threshold. */
 export const TOL_MM = 0.5
@@ -66,7 +66,7 @@ export function buildReport(rows: EvalRow[], meta: EvalMeta) {
   const sep = `|${COLUMNS.map(() => '---').join('|')}|`
   const markdown = `# Test-set results
 
-Ground truth recorded ${meta.recordedAt} (before any run). Print scale check: ${meta.printScaleCheck}.
+Ground truth recorded ${meta.recordedAt} (before any run). Kit: ${meta.kit ?? 'printed A4 Ring Kit'}. Scale check: ${meta.scaleCheck}.
 Chromium via Playwright on this machine; engine init on this machine: ${f0(meta.engineInitMs)} ms (once per session, before the first photo) (localhost; the one-time ~4 MB download is not included).
 Columns: *time ms* = CV pipeline inside the worker; *wall ms* = tap → result on the page, including file decode and worker messaging.
 

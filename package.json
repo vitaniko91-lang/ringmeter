@@ -10,6 +10,7 @@
     "preview": "vite preview --port 4173",
     "test": "vitest run",
     "kit": "tsx scripts/make-kit.ts && tsx scripts/check-kit.ts",
+    "kit:screen": "vite build && tsx scripts/check-screen-kit.ts",
     "sizing-table": "tsx scripts/sizing-table.ts",
     "evaluate": "vite build && tsx scripts/evaluate.ts"
   },
