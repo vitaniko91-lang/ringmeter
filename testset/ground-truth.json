@@ -1,20 +1,26 @@
 {
-  "status": "TEMPLATE — fill truthMm/method/scaleCheck in Task 14 and commit BEFORE the first evaluate run",
-  "recordedAt": "",
-  "scaleCheck": "",
-  "kit": "screen-kit.html on a spare phone (device: …), calibrated against an ID-1 bank card long edge (85.60 mm): … CSS px/mm",
+  "status": "FILLED 2026-09-18 — recorded before the first evaluate run (see git history)",
+  "recordedAt": "2026-09-18 14:20–14:45 WITA",
+  "scaleCheck": "Rp 500 coin fitted by eye first: 5.956 CSS px/mm (−1.3 %); the spare phone is an iPhone with a 460 ppi panel → 6.036 CSS px/mm typed in, then an ID-1 bank card's long edge (85.60 mm) matched the calibration line at 6.036 — used 6.036",
+  "kit": "screen-kit.html on a spare iPhone (Dynamic Island model, 460 ppi, DPR 3, Safari) at 6.036 CSS px/mm; no printer was available",
   "objects": {
     "A": {
       "kind": "ring",
-      "truthMm": null,
-      "method": "on-screen gauge (screen-kit.html, circle stepped 0.1 mm): largest circle fully visible inside = L, smallest circle the ring covers = U → (L+U)/2",
-      "uncertaintyMm": 0.25
+      "truthMm": 15.3,
+      "method": "on-screen gauge (screen-kit.html), 0.1 mm steps, ring centred on the circle: circle fully visible inside the hole at 15.2, covered at 15.4 → 15.3",
+      "uncertaintyMm": 0.2
     },
     "B": {
       "kind": "ring",
+      "truthMm": 16.6,
+      "method": "on-screen gauge, same as A: visible at 16.5, covered at 16.7 → 16.6",
+      "uncertaintyMm": 0.2
+    },
+    "S": {
+      "kind": "ring (below the supported range)",
       "truthMm": null,
-      "method": "on-screen gauge, same as A",
-      "uncertaintyMm": 0.25
+      "method": "on-screen gauge: circle still covered at 12.4 mm, the gauge minimum → inner diameter < 12.4 mm; below RING_DIAMETER_MM.min = 12, so the app must not measure it",
+      "uncertaintyMm": null
     }
   },
   "photos": [
@@ -27,6 +33,7 @@
     { "file": "U-two-rings.jpg", "object": null, "expect": "MULTIPLE_RINGS" },
     { "file": "U-no-marker.jpg", "object": null, "expect": "NO_MARKER" },
     { "file": "U-tilt40.jpg", "object": "A", "expect": "TILT" },
-    { "file": "U-blur.jpg", "object": "A", "expect": "BLUR" }
+    { "file": "U-blur.jpg", "object": "A", "expect": "BLUR" },
+    { "file": "U-too-small.jpg", "object": "S", "expect": "NO_RING" }
   ]
 }
