@@ -137,6 +137,13 @@ export default function ScreenKit() {
     )
     const controls = (
       <div className="flex min-w-0 flex-col gap-2">
+        {/* Slider for the coarse fit (the default can be 20 % off on an old phone), buttons for the last 0.2 % */}
+        <label className="flex items-center gap-3 text-xs text-muted">
+          <span className="whitespace-nowrap">smaller</span>
+          <input type="range" min={SCALE_RANGE.min} max={SCALE_RANGE.max} step={0.01} value={s} aria-label="scale, CSS px per mm"
+            onChange={(e) => { const v = Number(e.target.value); setScale(v); saveScale(v) }} className="w-full accent-accent" />
+          <span className="whitespace-nowrap">bigger</span>
+        </label>
         <div className="flex flex-wrap gap-2">
           <button type="button" onClick={() => bump(1 / 1.01)} className="min-h-11 min-w-14 rounded-md border border-line text-sm font-semibold">−1 %</button>
           <button type="button" onClick={() => bump(1 / 1.002)} className="min-h-11 min-w-14 rounded-md border border-line text-sm">−0.2 %</button>
@@ -146,8 +153,8 @@ export default function ScreenKit() {
         </div>
         <p className="num text-xs text-muted">{s.toFixed(3)} CSS px / mm · {(s * 25.4 * (devicePixelRatio || 1)).toFixed(0)} ppi</p>
         <p className="text-xs text-muted">
-          <strong>Bank card:</strong> lay its long edge along the line, one corner on a tick, and press − / + until the far corner meets the other tick.
-          <strong> Or a Rp 500 coin</strong> ({COIN.d} mm) filling the circle with no gap and no overlap. Full brightness, 100 % zoom.
+          Nothing is dragged on the drawing itself — the slider and the buttons resize it. <strong>Bank card:</strong> long edge along the line, one corner on a tick; resize until the far corner meets the other tick.
+          <strong> Or a Rp 500 coin</strong> ({COIN.d} mm) filling the circle with no gap and no overlap. Each ± press is tiny on purpose (1 % ≈ 1 mm of the line) — watch the number. Full brightness, 100 % zoom.
         </p>
       </div>
     )

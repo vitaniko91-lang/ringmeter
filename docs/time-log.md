@@ -25,3 +25,4 @@
 | Task 13 — README, delivery notes, video script, repo, deploy | 01:08 | 01:12 | 4 |
 | Review fixes — Tasks 12–13 | 01:41 | 03:37 | 116 |
 | Task 14a — screen kit (no printer): screen-kit.html, render check, docs | 13:30 | 13:40 | 10 |
+| Task 14a — screen kit: calibration slider | 14:05 | 14:12 | 7 |
