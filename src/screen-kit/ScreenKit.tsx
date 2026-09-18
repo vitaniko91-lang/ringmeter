@@ -151,7 +151,12 @@ export default function ScreenKit() {
           <button type="button" onClick={() => bump(1.01)} className="min-h-11 min-w-14 rounded-md border border-line text-sm font-semibold">+1 %</button>
           <button type="button" onClick={() => { if (!scale) { setScale(s); saveScale(s) } setView('marker') }} className="min-h-11 rounded-md bg-ink px-4 text-sm font-semibold text-paper">Done → Marker</button>
         </div>
-        <p className="num text-xs text-muted">{s.toFixed(3)} CSS px / mm · {(s * 25.4 * (devicePixelRatio || 1)).toFixed(0)} ppi</p>
+        <label className="num flex items-center gap-2 text-xs text-muted">
+          <input type="number" inputMode="decimal" step={0.001} min={SCALE_RANGE.min} max={SCALE_RANGE.max} value={Number(s.toFixed(3))} aria-label="CSS px per mm"
+            onChange={(e) => { const v = Number(e.target.value); if (v >= SCALE_RANGE.min && v <= SCALE_RANGE.max) { setScale(v); saveScale(v) } }}
+            className="num w-24 rounded-md border border-line bg-white px-2 py-1 text-sm text-ink" />
+          CSS px / mm · {(s * 25.4 * (devicePixelRatio || 1)).toFixed(0)} ppi — or type the value from the phone's spec: ppi ÷ 25.4 ÷ {devicePixelRatio || 1}
+        </label>
         <p className="text-xs text-muted">
           Nothing is dragged on the drawing itself — the slider and the buttons resize it. <strong>Bank card:</strong> long edge along the line, one corner on a tick; resize until the far corner meets the other tick.
           <strong> Or a Rp 500 coin</strong> ({COIN.d} mm) filling the circle with no gap and no overlap. Each ± press is tiny on purpose (1 % ≈ 1 mm of the line) — watch the number. Full brightness, 100 % zoom.
