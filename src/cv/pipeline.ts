@@ -5,7 +5,7 @@ import { toGray } from './image'
 import { detectMarker } from './marker'
 import { markerGates, markerGeometry, blurGate, ellipseGate, edgeGate, GATES } from './gates'
 import { rectify, canonToSource, type Rectified } from './rectify'
-import { findHoleCandidates, refineHole } from './ring'
+import { findHoleCandidates, inscribedCircle, refineHole } from './ring'
 import { uncertainty, estimateDistanceMm } from './uncertainty'
 import { sizeRange } from '../sizing/sizing'
 import { CANON_PX_PER_MM, CANON_SIZE_PX, MARKER_CANON_PX, MARKER_MM, mmToCanon } from '../kit/kit-geometry'
@@ -38,6 +38,16 @@ export function blurScore(cv: CV, gray: any, quad: Quad): number {
  * frame with INTER_LINEAR skips pixels (aliasing on the rim); a low-pass at half the decimation ratio prevents it.
  * 0 up to 15 px/mm, 0.5 · pxPerMm / 10 above.
  */
+/** Sub-pixel corner refinement of a marker quad on the full-resolution gray image (window ± 7 px). */
+function refineQuadFullRes(cv: CV, gray: any, quad: Quad): Quad {
+  const m = cv.matFromArray(4, 1, cv.CV_32FC2, quad.flat())
+  try {
+    cv.cornerSubPix(gray, m, new cv.Size(7, 7), new cv.Size(-1, -1), new cv.TermCriteria(cv.TermCriteria_EPS + cv.TermCriteria_COUNT, 30, 0.01))
+    const d = m.data32F
+    return [[d[0], d[1]], [d[2], d[3]], [d[4], d[5]], [d[6], d[7]]]
+  } catch { return quad } finally { m.delete() }
+}
+
 export function preBlurSigma(pxPerMm: number): number {
   const ratio = pxPerMm / CANON_PX_PER_MM
   return ratio > PRE_BLUR_RATIO ? 0.5 * ratio : 0
@@ -87,7 +97,9 @@ export function measure(cv: CV, image: ImageLike): Outcome {
       try {
         cv.resize(gray, small, new cv.Size(Math.round(gray.cols * k), Math.round(gray.rows * k)), 0, 0, cv.INTER_AREA)
         const q = detectMarker(cv, small)
-        quad = q ? (q.map(([x, y]) => [x / k, y / k]) as Quad) : null
+        // Corners found on the INTER_AREA copy sit ≈ 1 % inside the true marker edges (measured 2026-09-22 on
+        // 14–20 px/mm photos: 288 vs 291 px). Re-refine them on the full-resolution image so the scale is exact.
+        quad = q ? refineQuadFullRes(cv, gray, q.map(([x, y]) => [x / k, y / k]) as Quad) : null
       } finally { small.delete() }
     } else quad = detectMarker(cv, gray)
     lap('marker')
@@ -124,21 +136,24 @@ export function measure(cv: CV, image: ImageLike): Outcome {
     const innerBoundary = canonToSource(cv, R.Hinv, hole.points)
     const g3 = edgeGate(hole.residualPx, hole.inliers)
     if (g3) return reject(g3, `edge residual ${hole.residualPx.toFixed(2)} px, ${hole.inliers}/64 inliers`, { markerQuad: quad, innerBoundary }, blur)
-    const tiltDeg = (Math.acos(Math.min(1, hole.axesRatio)) * 180) / Math.PI
+    // Tilt for σ: whichever is worse — the hole's ellipticity or the marker's keystone. Both are lower bounds on the true tilt.
+    const tiltDeg = Math.max((Math.acos(Math.min(1, hole.axesRatio)) * 180) / Math.PI, geo.tiltDeg)
     const g4 = ellipseGate(hole.axesRatio)
     if (g4) return reject(g4, `hole axes ratio ${hole.axesRatio.toFixed(3)} (tilt ≈ ${tiltDeg.toFixed(0)}°)`, { markerQuad: quad, innerBoundary }, blur)
 
     // 5. numbers
-    const diameterMm = (2 * hole.r) / CANON_PX_PER_MM
+    const rimFitMm = (2 * hole.r) / CANON_PX_PER_MM
+    const ins = inscribedCircle(cv, hole)
+    const diameterMm = (2 * ins.r) / CANON_PX_PER_MM   // what passes: the largest circle inside the rim, not the rim's mean circle
     const estDistanceMm = estimateDistanceMm(Math.max(gray.cols, gray.rows), geo.sidePx)
-    const u = uncertainty({ diameterMm, pxPerMm: geo.pxPerMm, markerSidePx: geo.sidePx, distanceMm: estDistanceMm, tiltDeg })
+    const u = uncertainty({ diameterMm, pxPerMm: geo.pxPerMm, markerSidePx: geo.sidePx, distanceMm: estDistanceMm, tiltDeg, rimFitMm, edgeRmsMm: hole.residualPx / CANON_PX_PER_MM })
     const b0 = mmToCanon({ x: 0, y: MARKER_MM + 3 }), b1 = mmToCanon({ x: 10, y: MARKER_MM + 3 })
     const scaleBar = canonToSource(cv, R.Hinv, [[b0.x, b0.y], [b1.x, b1.y]]) as [Pt, Pt]
     lap('result')
     return {
-      ok: true, diameterMm, sigmaMm: u.total, sigmaParts: { px: u.px, marker: u.marker, parallax: u.parallax },
+      ok: true, diameterMm, sigmaMm: u.total, sigmaParts: { px: u.px, marker: u.marker, parallax: u.parallax, rim: u.rim },
       axesRatio: hole.axesRatio, tiltDeg, pxPerMm: geo.pxPerMm, markerSidePx: geo.sidePx, estDistanceMm, blurScore: blur!, // known: g1/g2 gates passed above
-      edgeResidualPx: hole.residualPx, edgeInliers: hole.inliers,
+      edgeResidualPx: hole.residualPx, edgeInliers: hole.inliers, rimFitMm,
       sizes: sizeRange(diameterMm, u.total), overlay: { markerQuad: quad, innerBoundary, scaleBar }, timings, totalMs: total(),
     }
   } catch (e) {

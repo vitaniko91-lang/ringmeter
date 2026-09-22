@@ -28,7 +28,7 @@ export type MeasureResult = {
   ok: true
   diameterMm: number
   sigmaMm: number
-  sigmaParts: { px: number; marker: number; parallax: number }
+  sigmaParts: { px: number; marker: number; parallax: number; rim: number }
   axesRatio: number
   tiltDeg: number
   pxPerMm: number
@@ -37,6 +37,7 @@ export type MeasureResult = {
   blurScore: number
   edgeResidualPx: number   // RMS radial residual of the inlier rays against the final circle fit, canonical px
   edgeInliers: number      // rays (of 64) that survived outlier rejection and fed the fit
+  rimFitMm: number         // least-squares rim circle; diameterMm is the inscribed circle (≤ rimFitMm when the hole is out of round)
   sizes: { nominal: SizeReading; low: SizeReading; high: SizeReading; spans: boolean }
   overlay: Required<Overlay>
   timings: Timings

@@ -14,6 +14,7 @@ const PORT = 4173
 const DIR = process.env.TESTSET_DIR ?? 'testset/photos'
 const GT = process.env.GROUND_TRUTH ?? 'testset/ground-truth.json'
 const OUT = process.env.RESULTS_OUT ?? 'testset/RESULTS.md'
+const OVERLAY_OUT = process.env.OVERLAY_OUT   // optional: per-photo overlays (marker quad, inner boundary in source px) as JSON, for offline inspection
 const READY_TIMEOUT_MS = Number(process.env.READY_TIMEOUT_MS ?? 180_000)   // aligned with useMeasure's INIT_WATCHDOG_MS
 
 const REJECT_CODES = Object.keys(REJECT_HINT)
@@ -48,12 +49,13 @@ if (!up) { server.kill(); throw new Error(`vite preview did not come up on :${PO
 
 // A server already answering on :4173 from a previous run (or an unrelated project) passes the readiness fetch
 // above too — confirm it is actually THIS build by matching the hashed entry script filename against dist/index.html.
-const distScript = /\/assets\/index-[^"']+\.js/.exec(readFileSync('dist/index.html', 'utf8'))?.[0]
+const distScript = /\/assets\/(?:index|main)-[^"']+\.js/.exec(readFileSync('dist/index.html', 'utf8'))?.[0]
 if (!distScript) { server.kill(); throw new Error('dist/index.html: could not find the built entry script tag') }
 const liveHtml = await (await fetch(`http://localhost:${PORT}/`)).text()
 if (!liveHtml.includes(distScript)) { server.kill(); throw new Error(`another server is on :${PORT}`) }
 
 const rows: EvalRow[] = []
+const overlays: Record<string, unknown> = {}
 let engineInitMs: number | null = null
 let browser: Awaited<ReturnType<typeof chromium.launch>> | null = null
 try {
@@ -73,8 +75,10 @@ try {
       file: ph.file, object: ph.object, truthMm: obj?.truthMm ?? null,
       measuredMm: o.ok ? +o.diameterMm.toFixed(2) : null, sigmaMm: o.ok ? +o.sigmaMm.toFixed(2) : null,
       sizes: o.ok ? o.sizes.nominal : null, verdict: o.ok ? 'MEASURE' : o.code, expect: ph.expect,
-      totalMs: o.totalMs, wallMs: last.wallMs, blurScore: o.blurScore ?? null, detail: o.ok ? '' : o.detail,
+      totalMs: o.totalMs, wallMs: last.wallMs, blurScore: o.blurScore ?? null,
+      detail: o.ok ? `rim fit ${o.rimFitMm.toFixed(2)} mm, ${o.edgeInliers}/64 rays, residual ${o.edgeResidualPx.toFixed(2)} px, axes ${o.axesRatio.toFixed(3)}; marker ${o.markerSidePx.toFixed(0)} px (${o.pxPerMm.toFixed(1)} px/mm, ≈${o.estDistanceMm.toFixed(0)} mm)` : o.detail,
     })
+    if (OVERLAY_OUT) overlays[ph.file] = { ok: o.ok, overlay: o.overlay, ...(o.ok ? { diameterMm: o.diameterMm, rimFitMm: o.rimFitMm, pxPerMm: o.pxPerMm } : {}) }
     console.log(`${ph.file}: ${o.ok ? o.diameterMm.toFixed(2) + ' mm' : o.code} (pipeline ${o.totalMs.toFixed(0)} ms, wall ${last.wallMs} ms)`)
   }
 } finally {
@@ -83,5 +87,6 @@ try {
 }
 const report = buildReport(rows, { recordedAt: gt.recordedAt, scaleCheck: gt.scaleCheck, kit: gt.kit, engineInitMs })
 writeFileSync(OUT, report.markdown)
+if (OVERLAY_OUT) writeFileSync(OVERLAY_OUT, JSON.stringify(overlays))
 console.log(`${OUT} written`)
 console.log(report.summary)

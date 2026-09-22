@@ -28,7 +28,8 @@ export function Result({ outcome: o, photo, fileTimings, wallMs, engineInitMs, o
         <summary className="flex min-h-10 cursor-pointer items-center gap-2 font-semibold before:h-2 before:w-2 before:shrink-0 before:-rotate-45 before:border-b-2 before:border-r-2 before:border-current before:transition-transform before:content-[''] group-open:before:rotate-45">How the ± was computed</summary>
         <p className="mt-1 text-muted">
           Edge localisation <span className="num">{o.sigmaParts.px.toFixed(2)}</span> mm ⊕ marker corners <span className="num">{o.sigmaParts.marker.toFixed(2)}</span> mm ⊕
-          ring-height parallax <span className="num">{o.sigmaParts.parallax.toFixed(2)}</span> mm (band height 2 mm assumed, tilt ≥ 5° assumed), combined in quadrature. See Limits below.
+          ring-height parallax <span className="num">{o.sigmaParts.parallax.toFixed(2)}</span> mm (band height 2 mm assumed, tilt ≥ 5° assumed) ⊕
+          out-of-roundness <span className="num">{o.sigmaParts.rim.toFixed(2)}</span> mm (rim circle {o.rimFitMm.toFixed(2)} mm vs the largest circle that passes), combined in quadrature. See Limits below.
         </p>
       </details>
       <Timings pipeline={o.timings} file={fileTimings} wallMs={wallMs} engineInitMs={engineInitMs} />

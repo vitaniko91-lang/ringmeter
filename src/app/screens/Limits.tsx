@@ -16,15 +16,16 @@ export function Limits() {
       </ul>
       <h3 className="mt-4 font-semibold">Uncertainty</h3>
       <p className="mt-1 text-muted">
-        The ± combines three measured or assumed terms: edge localisation ({ASSUMED.edgePx} px), marker-corner error ({ASSUMED.cornerPx} px per side) and parallax from the ring's height —
+        The ± combines four terms: edge localisation ({ASSUMED.edgePx} px), marker-corner error ({ASSUMED.cornerPx} px per side), out-of-roundness (half the gap between the least-squares rim circle and the largest circle that passes, plus the rim's RMS scatter — zero for a round band, real for a hinge, a clasp or a hammered band) and parallax from the ring's height —
         the visible inner rim sits ≈{ASSUMED.ringHeightMm} mm above the sheet, so it projects slightly larger, and any residual tilt below {ASSUMED.minTiltDeg}° cannot be detected and is assumed present.
         A cropped or zoomed photo breaks the distance estimate used for the parallax term.
-        Typical result: ±{TYPICAL_SIGMA_MM} mm, i.e. about one EU size. The test set in the repository reports the observed error per photo; we never claim better than what was measured.
+        Typical result: ±{TYPICAL_SIGMA_MM} mm, i.e. up to two EU sizes. The test set in the repository reports the observed error per photo; we never claim better than what was measured.
+        Known bias: a tall ring reads high, because a top-down photo can only see the top of the inner rim, which is closer to the camera than the marker — a 3 mm-tall hoop measured +0.3 to +0.5 mm against a gauge on every photo. Shooting from farther away halves the effect; the parallax term above is sized for a {ASSUMED.ringHeightMm} mm band.
       </p>
       <h3 className="mt-4 font-semibold">Sizing table</h3>
       <p className="mt-1 text-muted">{SIZING_SOURCE.name} (<a className="underline" href={SIZING_SOURCE.url}>source</a>). {SIZING_SOURCE.formulas.eu}; {SIZING_SOURCE.formulas.us}; {SIZING_SOURCE.formulas.uk}. {SIZING_SOURCE.rounding}</p>
       <h3 className="mt-4 font-semibold">Method</h3>
-      <p className="mt-1 text-muted">ArUco marker detection → perspective rectification to 10 px/mm → circular white hole inside the zone → 64 sub-pixel edge points → least-squares circle. Everything runs in a Web Worker with OpenCV.js; nothing is uploaded.</p>
+      <p className="mt-1 text-muted">ArUco marker detection → perspective rectification to 10 px/mm → circular white hole inside the zone → 64 sub-pixel edge points → least-squares rim circle for the overlay and the tilt check → the reported diameter is the largest circle inscribed in the rim polygon, i.e. what a finger or a gauge actually passes. Everything runs in a Web Worker with OpenCV.js; nothing is uploaded.</p>
     </section>
   )
 }

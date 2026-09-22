@@ -9,8 +9,8 @@ export const ASSUMED = {
   cornerPx: 0.5,       // ArUco corner error per side, in source px
 } as const
 
-/** Set from the observed test-set error in Task 14 — must be ≥ max observed |err|. Displayed in the Limits section. */
-export const TYPICAL_SIGMA_MM = 0.3
+/** Set from the observed test-set error (testset/RESULTS.md, 2026-09-22: max |err| 0.52 mm over 20 measured photos) — must be ≥ max observed |err|. Displayed in the Limits section. */
+export const TYPICAL_SIGMA_MM = 0.55
 
 /** Camera-to-sheet distance from the marker's apparent size: f_px ≈ focalFraction × long side, D = f_px · 20 mm / side. */
 export function estimateDistanceMm(longSidePx: number, markerSidePx: number) {
@@ -18,10 +18,14 @@ export function estimateDistanceMm(longSidePx: number, markerSidePx: number) {
 }
 
 /** Precondition: marker gates passed (markerSidePx, pxPerMm, distanceMm > 0). */
-export function uncertainty(a: { diameterMm: number; pxPerMm: number; markerSidePx: number; distanceMm: number; tiltDeg: number }) {
+export function uncertainty(a: { diameterMm: number; pxPerMm: number; markerSidePx: number; distanceMm: number; tiltDeg: number; rimFitMm?: number; edgeRmsMm?: number }) {
   const px = ASSUMED.edgePx / a.pxPerMm
   const marker = (a.diameterMm * ASSUMED.cornerPx) / a.markerSidePx
   const tilt = (Math.max(a.tiltDeg, ASSUMED.minTiltDeg) * Math.PI) / 180
   const parallax = (a.diameterMm * ASSUMED.ringHeightMm) / a.distanceMm + ASSUMED.ringHeightMm * Math.tan(tilt)
-  return { px, marker, parallax, total: Math.hypot(px, marker, parallax) }
+  // Out-of-roundness: the reported diameter is the inscribed circle; the least-squares rim circle sits above it by
+  // whatever a hinge, clasp or hammered facets protrude. Half that gap, plus the rim's own RMS scatter, is the
+  // honest spread of "the" diameter for a hole that is not a circle. Zero for a round band.
+  const rim = Math.hypot(a.rimFitMm !== undefined ? Math.max(0, a.rimFitMm - a.diameterMm) / 2 : 0, a.edgeRmsMm ?? 0)
+  return { px, marker, parallax, rim, total: Math.hypot(px, marker, parallax, rim) }
 }

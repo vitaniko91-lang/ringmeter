@@ -3,12 +3,12 @@ import { MARKER_MM } from '../kit/kit-geometry'
 
 export const GATES = {
   MIN_PX_PER_MM: 8,        // marker side ≥ 160 px in the full-resolution photo
-  MIN_SIDE_RATIO: 0.97,    // marker min/max side — coarse tilt check (~14°)
+  MIN_SIDE_RATIO: 0.95,    // marker min/max side — coarse tilt check (~18°). Hand-held overhead shots land at 0.958–0.97 (2026-09-22); the residual tilt feeds σ instead of rejecting
   MAX_ANGLE_DEV_DEG: 5,    // marker corner angles vs 90°
-  BLUR_MIN_SCORE: 60,      // Laplacian variance on the marker crop normalised to 200 px — CALIBRATED in Task 13
-  MIN_AXES_RATIO: 0.985,   // hole ellipse minor/major — fine tilt check (~10°)
-  EDGE_MAX_RESIDUAL_PX: 0.6, // RMS radial residual of the inlier rays against the final circle, canonical px
-  EDGE_MIN_INLIERS: 48,    // rays (of 64) that must agree on the inner rim
+  BLUR_MIN_SCORE: 60,      // Laplacian variance on the marker crop normalised to 200 px — sharp screen-kit photos score 690–860 (2026-09-22)
+  MIN_AXES_RATIO: 0.94,    // hole ellipse minor/major — a hammered band reads 0.95–0.99 while lying flat (2026-09-22); tilt itself is caught by the marker gates above
+  EDGE_MAX_RESIDUAL_PX: 2.5, // RMS radial residual of the inlier rays, canonical px — 0.4–0.6 on a smooth band, 1.1–2.2 on a hammered one (2026-09-22); the residual also feeds σ
+  EDGE_MIN_INLIERS: 44,    // rays (of 64) that must agree on the inner rim — an open hoop with a hinge keeps 46–48 (2026-09-22)
 } as const
 
 export function sideLengths(q: Quad): number[] {

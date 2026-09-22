@@ -16,11 +16,24 @@ function meanOnCircle(gray: any, cx: number, cy: number, r: number, n = 32) {
 }
 
 /** White blobs fully inside the zone, circular, ring-sized, and surrounded by a darker band. */
+// The 7 px opening detaches specular highlights from the rim of a solid band. On a thin hammered band (≈ 9 canonical px
+// wide, bright facets) it can cut the band itself, so the hole leaks into the paper and no candidate survives
+// (B-paper-03, 2026-09-22). Fall back to a 3 px opening — the highlight problem it was added for is rarer than a lost ring.
+const OPEN_KERNELS_PX = [7, 3] as const
+
 export function findHoleCandidates(cv: CV, canon: any): HoleCandidate[] {
+  for (const k of OPEN_KERNELS_PX) {
+    const out = holeCandidatesWithOpening(cv, canon, k)
+    if (out.length > 0) return out
+  }
+  return []
+}
+
+function holeCandidatesWithOpening(cv: CV, canon: any, openPx: number): HoleCandidate[] {
   const Z = ZONE_CANON_PX
   const roi = canon.roi(new cv.Rect(Z.x, Z.y, Z.w, Z.h))
   const blur = new cv.Mat(), bin = new cv.Mat(), contours = new cv.MatVector(), hier = new cv.Mat()
-  const kernel = cv.getStructuringElement(cv.MORPH_ELLIPSE, new cv.Size(7, 7))
+  const kernel = cv.getStructuringElement(cv.MORPH_ELLIPSE, new cv.Size(openPx, openPx))
   const out: HoleCandidate[] = []
   try {
     cv.GaussianBlur(roi, blur, new cv.Size(3, 3), 0)
@@ -55,6 +68,7 @@ export type RefinedHole = {
   cx: number; cy: number; r: number; axesRatio: number
   points: Pt[]        // all 64 sampled edge points (before outlier rejection)
   inliers: number     // how many of them survived the consensus + MAD rejection and fed the final fit
+  inlierMask: boolean[] // per ray: did it feed the final fit
   residualPx: number  // RMS radial residual of the inliers against the final fit
 }
 
@@ -147,6 +161,51 @@ export function refineHole(cv: CV, canon: any, c: HoleCandidate): RefinedHole {
     m = cv.matFromArray(keep.length, 1, cv.CV_32FC2, keep.flat())
     const el = cv.fitEllipse(m)
     const axesRatio = Math.min(el.size.width, el.size.height) / Math.max(el.size.width, el.size.height)
-    return { cx: fit.cx, cy: fit.cy, r: fit.r, axesRatio, points: pts, inliers: keep.length, residualPx }
+    const keepSet = new Set(keep)
+    return { cx: fit.cx, cy: fit.cy, r: fit.r, axesRatio, points: pts, inliers: keep.length, inlierMask: pts.map((p) => keepSet.has(p)), residualPx }
   } finally { m?.delete(); g.delete(); roi.delete() }
+}
+
+const INSCRIBED_UPSAMPLE = 4 // rasterise the rim polygon at 4× canonical resolution → inscribed radius to ≈ 0.01 mm
+
+/**
+ * Largest circle that fits inside the rim polygon — the diameter a finger actually has to pass, and what a
+ * physical gauge measures. Differs from the least-squares rim circle when the hole is out of round (a hinge or
+ * clasp protruding into the hole, a hammered band): measured 2026-09-22 on an open hoop, rim fit 18.0 mm vs
+ * gauge 17.5 mm. Rays that were rejected as outliers are replaced by the fitted circle at that angle, so a ray
+ * that landed on a reflection cannot punch a hole in the polygon.
+ */
+export function inscribedCircle(cv: CV, h: RefinedHole): { cx: number; cy: number; r: number } {
+  const n = h.points.length
+  // Per-ray radius about the fit centre (outlier rays → the fit radius), then a 5-ray circular median: a single ray
+  // that landed on a facet highlight or a speck must not dent the polygon, while a real protrusion (a hinge spans
+  // ~6 rays on an 18 mm hoop) survives the filter.
+  const raw = h.points.map(([x, y], k) => (h.inlierMask[k] ? Math.hypot(x - h.cx, y - h.cy) : h.r))
+  const rad = raw.map((_, k) => {
+    const w = [raw[(k + n - 2) % n], raw[(k + n - 1) % n], raw[k], raw[(k + 1) % n], raw[(k + 2) % n]].sort((a, b) => a - b)
+    return w[2]
+  })
+  // Interpolate the radius between rays (4 sub-vertices per ray): a 64-gon's chords sag R·(1 − cos π/64) ≈ 0.12 %
+  // inside the true arc, which alone would bias the inscribed circle 0.02 mm low; 256 vertices make it ≈ 0.
+  const SUB = 4
+  const poly: number[] = []
+  for (let k = 0; k < n; k++) for (let j = 0; j < SUB; j++) {
+    const t = (2 * Math.PI * (k + j / SUB)) / n
+    const r = rad[k] + (rad[(k + 1) % n] - rad[k]) * (j / SUB)
+    poly.push(h.cx + Math.cos(t) * r, h.cy + Math.sin(t) * r)
+  }
+  const U = INSCRIBED_UPSAMPLE
+  const margin = 4
+  const x0 = Math.floor(h.cx - h.r - margin), y0 = Math.floor(h.cy - h.r - margin)
+  const size = Math.ceil(2 * (h.r + margin)) * U
+  const mask = cv.Mat.zeros(size, size, cv.CV_8UC1)
+  const pts = cv.matFromArray(poly.length / 2, 1, cv.CV_32SC2, poly.map((v, i) => Math.round((v - (i % 2 === 0 ? x0 : y0)) * U)))
+  const pv = new cv.MatVector(), dist = new cv.Mat()
+  try {
+    pv.push_back(pts)
+    cv.fillPoly(mask, pv, new cv.Scalar(255))
+    cv.distanceTransform(mask, dist, cv.DIST_L2, cv.DIST_MASK_PRECISE)
+    const mm = (cv as any).minMaxLoc(dist)
+    return { cx: x0 + mm.maxLoc.x / U, cy: y0 + mm.maxLoc.y / U, r: mm.maxVal / U }
+  } finally { pv.delete(); pts.delete(); mask.delete(); dist.delete() }
 }
