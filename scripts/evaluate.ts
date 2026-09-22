@@ -85,7 +85,7 @@ try {
   server.kill()   // independent of browser.close(): the preview server must go down even if closing the browser throws
   try { await browser?.close() } catch { /* best effort — nothing left to report to */ }
 }
-const report = buildReport(rows, { recordedAt: gt.recordedAt, scaleCheck: gt.scaleCheck, kit: gt.kit, engineInitMs })
+const report = buildReport(rows, { recordedAt: gt.recordedAt, status: gt.status, scaleCheck: gt.scaleCheck, kit: gt.kit, engineInitMs })
 writeFileSync(OUT, report.markdown)
 if (OVERLAY_OUT) writeFileSync(OVERLAY_OUT, JSON.stringify(overlays))
 console.log(`${OUT} written`)

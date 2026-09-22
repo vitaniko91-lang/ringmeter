@@ -2,7 +2,7 @@
 
 Phone-friendly web page that estimates a ring's inner diameter from a photo taken over a printed calibration sheet (20 mm ArUco marker). Everything runs on-device in a Web Worker (OpenCV.js WASM); nothing is uploaded.
 
-Live demo: https://ringmeter.vercel.app   ·   Ring Kit: `/ring-kit.pdf` (print at 100 %, check the scale with the coin circle)   ·   no printer: `/screen-kit.html` on a spare phone (calibrate once against a bank card, then it shows the same 20 mm marker, ring zone and a stepping gauge)
+Live demo: https://ringmeter.vercel.app   ·   Ring Kit: `/ring-kit.pdf` (print at 100 %, check the scale with the coin circle)   ·   no printer: `/screen-kit.html` on a spare phone or a laptop laid flat (calibrate once against a bank card, then it shows the same 20 mm marker, ring zone and a stepping gauge; the shipped test set was shot this way)
 
 ## Run
     npm i
@@ -15,7 +15,7 @@ Live demo: https://ringmeter.vercel.app   ·   Ring Kit: `/ring-kit.pdf` (print 
                        # nothing inked inside the ring zone (outside the four 5 mm corner ticks), measure(render) = NO_RING, coin circle Ø 27.2 ± 0.1 mm
     npm run kit:screen # build, then render screen-kit.html at DPR 3 in both orientations and run the same three checks on the screenshot
     npm run evaluate   # after `npm run build`: Playwright drives the built app (?eval=1) over testset/photos → testset/RESULTS.md
-                       # env: TESTSET_DIR, GROUND_TRUTH, RESULTS_OUT override the photo dir / ground-truth json / output path
+                       # env: TESTSET_DIR, GROUND_TRUTH, RESULTS_OUT override the photo dir / ground-truth json / output path; OVERLAY_OUT dumps the found boundaries as JSON
 
 ## Prerequisites
 - Node ≥ 20
@@ -28,11 +28,11 @@ Live demo: https://ringmeter.vercel.app   ·   Ring Kit: `/ring-kit.pdf` (print 
 2. ArUco 4×4 (id 0) marker detected on a ≤ 1600 px copy; corners mapped back to full resolution.
 3. Gates: marker size (≥ 8 px/mm), skew (side ratio, corner angles), sharpness (Laplacian variance on the marker crop, normalised to marker size).
 4. Homography to a 10 px/mm plane (pre-blur when the source is denser than 15 px/mm); the ring zone is a fixed rectangle relative to the marker.
-5. White circular hole inside the zone: adaptive threshold → 7×7 opening → contours → circularity, size, darker band around.
-6. 64 radial sub-pixel edge points → RANSAC-lite consensus (minimal 3-ray subsets) → Kåsa least-squares circle with two MAD passes → ellipse ratio for tilt.
-7. σ = edge ⊕ marker-corner ⊕ ring-height parallax (2 mm band, ≥ 5° tilt assumed), in quadrature; sizes per ISO 8653 / US / UK (`docs/sizing-table.md`).
+5. White circular hole inside the zone: adaptive threshold → 7×7 opening (3×3 second pass for thin bands) → contours → circularity, size, darker band around.
+6. 64 radial sub-pixel edge points → RANSAC-lite consensus (minimal 3-ray subsets) → Kåsa least-squares circle with two MAD passes → ellipse ratio for tilt → the reported diameter is the largest circle inscribed in the rim polygon (distance transform), what a gauge passes; the least-squares circle stays as `rimFitMm`.
+7. σ = edge ⊕ marker-corner ⊕ ring-height parallax (2 mm band, ≥ 5° tilt assumed) ⊕ out-of-roundness, in quadrature; sizes per ISO 8653 / US / UK (`docs/sizing-table.md`). Known bias: a tall ring reads high (see DELIVERY-NOTES).
 
-Reject codes, each with a retake hint on the page: `BAD_FILE`, `NO_MARKER`, `TOO_FAR`, `TILT`, `BLUR`, `NO_RING`, `MULTIPLE_RINGS`, `ELLIPTIC`, `EDGE_UNCLEAR` (rim residual > 0.6 px or < 48 of 64 rays agree), `INTERNAL_ERROR` (worker failure or watchdog).
+Reject codes, each with a retake hint on the page: `BAD_FILE`, `NO_MARKER`, `TOO_FAR`, `TILT`, `BLUR`, `NO_RING`, `MULTIPLE_RINGS`, `ELLIPTIC`, `EDGE_UNCLEAR` (rim residual > 2.5 px or < 44 of 64 rays agree), `INTERNAL_ERROR` (worker failure or watchdog).
 
 ## Notes
 - Fonts (IBM Plex Sans / Mono) are self-hosted via `@fontsource`; no third-party requests at runtime.

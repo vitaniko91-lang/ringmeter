@@ -27,3 +27,6 @@
 | Task 14a — screen kit (no printer): screen-kit.html, render check, docs | 13:30 | 13:40 | 10 |
 | Task 14a — screen kit: calibration slider | 14:05 | 14:12 | 7 |
 | Task 14a — screen kit: typed scale input | 14:15 | 14:20 | 5 |
+| Task 14b — first real photos (glass), triage, gate calibration | 09-21 21:00 | 09-21 23:30 | 150 |
+| Task 14c — inscribed-circle estimator, σ rim term, paper photos | 09-22 09:30 | 09-22 12:00 | 150 |
+| Task 14d — scale verification, ground truth, photo set, evaluate, notes, deploy | 09-22 15:30 | 09-22 18:30 | 180 |
