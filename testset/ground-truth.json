@@ -1,6 +1,6 @@
 {
   "status": "RE-RECORDED 2026-09-22 — supersedes the 2026-09-18 file (rings A/B/S measured on a spare iPhone kit that was no longer available on the day of the photo run). Truth values below come from the on-screen gauge, not from the app. Full disclosure: the raw photos were run through the evaluator in triage mode on 2026-09-21/22 while the pipeline gates were being calibrated (see DELIVERY-NOTES → What changed after the first photos); the gauge readings were taken before that and were not adjusted afterwards.",
-  "recordedAt": "2026-09-22 09:40–10:20 WITA (gauge readings); photos 2026-09-21 21:10–22:05 WITA and 2026-09-22 10:25 WITA",
+  "recordedAt": "2026-09-22 09:40–10:20 WITA (gauge readings); photos 2026-09-21 21:10–22:05, 2026-09-22 10:25 and 2026-09-22 19:10 WITA",
   "scaleCheck": "screen-kit.html on a MacBook Air (13.3\", 2560×1600 panel, 1440×900 CSS): an ID-1 bank card's long edge (85.60 mm) matched the calibration line at 5.03 CSS px/mm; the panel's nominal pitch gives 2560 / 286.5 mm / 1.778 = 5.03 as well. Independent check on the photos: the display's pixel grid (0.1119 mm pitch) resolved by FFT on H-paper-05 gives 24.6–24.9 photo px/mm against 24.67 from the marker.",
   "kit": "screen-kit.html on the MacBook Air laid flat (5.03 CSS px/mm); the ring lies on a square of white paper placed on the glass inside the zone for the *-paper-* photos and directly on the glass for the *-glass-* photos. Photos with an iPhone main camera, hand-held, roughly overhead, 11–21 cm from the sheet (distance estimated from the marker's size). No printer was available.",
   "objects": {
@@ -18,35 +18,158 @@
     }
   },
   "photos": [
-    { "file": "H-glass-01.jpg", "object": "H", "expect": "MEASURE" },
-    { "file": "H-glass-02.jpg", "object": "H", "expect": "MEASURE" },
-    { "file": "H-glass-03.jpg", "object": "H", "expect": "MEASURE" },
-    { "file": "H-glass-04.jpg", "object": "H", "expect": "MEASURE" },
-    { "file": "H-glass-05.jpg", "object": "H", "expect": "MEASURE" },
-    { "file": "H-glass-06.jpg", "object": "H", "expect": "MEASURE" },
-    { "file": "H-glass-07.jpg", "object": "H", "expect": "MEASURE" },
-    { "file": "H-paper-01.jpg", "object": "H", "expect": "MEASURE" },
-    { "file": "H-paper-02.jpg", "object": "H", "expect": "MEASURE" },
-    { "file": "H-paper-03.jpg", "object": "H", "expect": "MEASURE" },
-    { "file": "H-paper-04.jpg", "object": "H", "expect": "MEASURE" },
-    { "file": "H-paper-05.jpg", "object": "H", "expect": "MEASURE" },
-    { "file": "H-paper-06.jpg", "object": "H", "expect": "MEASURE" },
-    { "file": "B-glass-01.jpg", "object": "B", "expect": "MEASURE" },
-    { "file": "B-glass-02.jpg", "object": "B", "expect": "MEASURE" },
-    { "file": "B-glass-03.jpg", "object": "B", "expect": "MEASURE" },
-    { "file": "B-glass-04.jpg", "object": "B", "expect": "MEASURE" },
-    { "file": "B-glass-05.jpg", "object": "B", "expect": "MEASURE" },
-    { "file": "B-paper-01.jpg", "object": "B", "expect": "MEASURE" },
-    { "file": "B-paper-02.jpg", "object": "B", "expect": "MEASURE" },
-    { "file": "B-paper-03.jpg", "object": "B", "expect": "MEASURE" },
-    { "file": "B-paper-04.jpg", "object": "B", "expect": "MEASURE" },
-    { "file": "B-paper-05.jpg", "object": "B", "expect": "MEASURE" },
-    { "file": "U-no-marker.jpg", "object": "B", "expect": "NO_MARKER" },
-    { "file": "U-blur-heavy.jpg", "object": "B", "expect": "NO_MARKER" }
+    {
+      "file": "H-glass-01.jpg",
+      "object": "H",
+      "expect": "MEASURE"
+    },
+    {
+      "file": "H-glass-02.jpg",
+      "object": "H",
+      "expect": "MEASURE"
+    },
+    {
+      "file": "H-glass-03.jpg",
+      "object": "H",
+      "expect": "MEASURE"
+    },
+    {
+      "file": "H-glass-04.jpg",
+      "object": "H",
+      "expect": "MEASURE"
+    },
+    {
+      "file": "H-glass-05.jpg",
+      "object": "H",
+      "expect": "MEASURE"
+    },
+    {
+      "file": "H-glass-06.jpg",
+      "object": "H",
+      "expect": "MEASURE"
+    },
+    {
+      "file": "H-glass-07.jpg",
+      "object": "H",
+      "expect": "MEASURE"
+    },
+    {
+      "file": "H-paper-01.jpg",
+      "object": "H",
+      "expect": "MEASURE"
+    },
+    {
+      "file": "H-paper-02.jpg",
+      "object": "H",
+      "expect": "MEASURE"
+    },
+    {
+      "file": "H-paper-03.jpg",
+      "object": "H",
+      "expect": "MEASURE"
+    },
+    {
+      "file": "H-paper-04.jpg",
+      "object": "H",
+      "expect": "MEASURE"
+    },
+    {
+      "file": "H-paper-05.jpg",
+      "object": "H",
+      "expect": "MEASURE"
+    },
+    {
+      "file": "H-paper-06.jpg",
+      "object": "H",
+      "expect": "MEASURE"
+    },
+    {
+      "file": "H-paper-07.jpg",
+      "object": "H",
+      "expect": "MEASURE"
+    },
+    {
+      "file": "B-glass-01.jpg",
+      "object": "B",
+      "expect": "MEASURE"
+    },
+    {
+      "file": "B-glass-02.jpg",
+      "object": "B",
+      "expect": "MEASURE"
+    },
+    {
+      "file": "B-glass-03.jpg",
+      "object": "B",
+      "expect": "MEASURE"
+    },
+    {
+      "file": "B-glass-04.jpg",
+      "object": "B",
+      "expect": "MEASURE"
+    },
+    {
+      "file": "B-glass-05.jpg",
+      "object": "B",
+      "expect": "MEASURE"
+    },
+    {
+      "file": "B-paper-01.jpg",
+      "object": "B",
+      "expect": "MEASURE"
+    },
+    {
+      "file": "B-paper-02.jpg",
+      "object": "B",
+      "expect": "MEASURE"
+    },
+    {
+      "file": "B-paper-03.jpg",
+      "object": "B",
+      "expect": "MEASURE"
+    },
+    {
+      "file": "B-paper-04.jpg",
+      "object": "B",
+      "expect": "MEASURE"
+    },
+    {
+      "file": "B-paper-05.jpg",
+      "object": "B",
+      "expect": "MEASURE"
+    },
+    {
+      "file": "U-no-marker.jpg",
+      "object": "B",
+      "expect": "NO_MARKER"
+    },
+    {
+      "file": "U-blur-heavy.jpg",
+      "object": "B",
+      "expect": "NO_MARKER"
+    },
+    {
+      "file": "U-tilt40.jpg",
+      "object": "H",
+      "expect": "TILT"
+    },
+    {
+      "file": "U-blur.jpg",
+      "object": "H",
+      "expect": "BLUR"
+    },
+    {
+      "file": "U-two-rings.jpg",
+      "object": null,
+      "expect": "MULTIPLE_RINGS"
+    }
   ],
   "photoNotes": {
     "U-no-marker.jpg": "ring on paper on a blank white screen — the marker is not in the frame",
     "U-blur-heavy.jpg": "motion-blurred so heavily that the marker itself is not detected; the intended verdict was BLUR, the honest expectation is NO_MARKER because the marker gate runs first",
-    "pending": "U-tilt40, U-two-rings and a mild U-blur (marker still detectable) are requested and will be appended in a later commit if they arrive before submission"
+    "U-tilt40.jpg": "deliberately tilted: marker side ratio 0.78 ≈ 39° off perpendicular",
+    "U-blur.jpg": "hand moved during the exposure; the marker is still detected, so the blur gate is the one that fires (score 29 < 60)",
+    "U-two-rings.jpg": "both rings inside the zone at once",
+    "H-paper-07.jpg": "shot in the same session as the three unsupported cases, kept in the measured set rather than dropped — excluding a photo because its error is near the maximum would be selection bias"
   }
 }

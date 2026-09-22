@@ -8,11 +8,11 @@ Live: https://ringmeter.vercel.app · repo: this one · results: `testset/RESULT
 
 | | photos | measured | verdict as expected | signed error vs gauge | max abs |
 |---|---|---|---|---|---|
-| H — hinged hoop, 17.5 mm by gauge | 13 | 13 | 13/13 | **+0.31 … +0.52, every photo high** | 0.52 |
+| H — hinged hoop, 17.5 mm by gauge | 14 | 14 | 14/14 | **+0.31 … +0.52, every photo high** | 0.52 |
 | B — hammered open band, 16.8 mm | 10 | 10 | 10/10 | −0.34 … +0.10 (mean −0.08) | 0.34 |
-| U — no marker / heavy blur | 2 | — | 2/2 (`NO_MARKER`) | | |
+| U — unsupported: 40° tilt, motion blur, two rings, no marker, unreadable marker | 5 | — | 5/5 (`TILT`, `BLUR`, `MULTIPLE_RINGS`, `NO_MARKER` ×2) | | |
 
-Overall: max |err| 0.52 mm, mean 0.28 mm, within ± 0.5 mm 22/23, verdict matches expectation 25/25. Mean tap-to-result 0.56 s on this laptop (pipeline 0.23 s); engine init 2.3 s once per session.
+Overall: 29 photos, max |err| 0.52 mm, mean 0.29 mm, within ± 0.5 mm 22/24, verdict matches expectation **29/29**. Mean tap-to-result 0.46 s on this laptop (pipeline 0.19 s); engine init 2.3 s once per session.
 
 **Ground truth.** No printer was available, so the kit is `screen-kit.html` on a MacBook Air laid flat, calibrated against a bank card (85.60 mm → 5.03 CSS px/mm; the panel's nominal pitch gives the same 5.03). Each ring's inner diameter was read on the on-screen stepping gauge (0.1 mm steps, L/U method described in the file) before any of these photos were evaluated against it. The earlier ground truth of 18.09 (rings A/B/S on a spare iPhone kit) is superseded — that phone was not available on the day of the photo run; the file keeps its history in git.
 
@@ -25,9 +25,10 @@ Overall: max |err| 0.52 mm, mean 0.28 mm, within ± 0.5 mm 22/23, verdict matche
 2. **Bare glass gives a false inner edge.** With the ring directly on the display, a dark reflection band inside the rim pulled the least-squares circle 0.5 mm small on some rays. Two changes: the reported diameter is now the largest circle inscribed in the 64-point rim polygon (what a gauge passes) rather than the least-squares circle, and the photos were repeated with a square of white paper under the ring. Both surfaces are in the set; they agree within 0.1 mm for each ring.
 3. **A thin hammered band was lost once** (`B-paper-04`, first run: `NO_RING`). The 7 px morphological opening that detaches highlights from a solid band cut the 0.9 mm band itself, so the hole leaked into the paper. Fixed with a second pass at 3 px when the first finds nothing; the photo now measures 16.90 mm.
 4. **Hand-held overhead shots are tilted 14–17°** (marker side ratio 0.958–0.97). The original gate (0.97) rejected three ordinary photos as `TILT`. Relaxed to 0.95 (≈ 18°); the residual tilt now feeds σ through the marker keystone as well as the hole's ellipticity. A deliberate 40° shot still rejects (cos 40° = 0.77).
-5. **Heavy motion blur falls through to `NO_MARKER`, not `BLUR`** — the marker gate runs first and cannot find the marker at all. Recorded as expected `NO_MARKER` rather than pretending the blur gate fired. A mild-blur, a 40° tilt and a two-rings photo with a detectable marker were requested and are appended if they arrive before submission (`photoNotes.pending` in the ground truth).
+5. **Heavy motion blur falls through to `NO_MARKER`, not `BLUR`** — the marker gate runs first and cannot find the marker at all (`U-blur-heavy`). Recorded as expected `NO_MARKER` rather than pretending the blur gate fired. The mild case, where the marker is still found and the blur gate is the one that speaks, is `U-blur` (score 29 against a threshold of 60).
 6. Tilt below ≈ 5° is not resolvable from a 20 mm marker or a 17 mm hole; carried as an assumed ± 5° term in σ.
 7. Two objects only. Both rings I own; the range 12–26 mm is claimed on the synthetic tests, verified on real photos at 16.8 and 17.5 mm.
+8. All five reject paths that a user can trigger are in the set and fire for the right reason: 39° tilt (`U-tilt40`, marker side ratio 0.78), motion blur with the marker still readable (`U-blur`), two rings in the zone (`U-two-rings`), marker out of frame (`U-no-marker`), marker destroyed by blur (`U-blur-heavy`).
 
 ### What changed after the first photos (gate calibration, 21–22.09)
 
@@ -57,7 +58,7 @@ Overall: max |err| 0.52 mm, mean 0.28 mm, within ± 0.5 mm 22/23, verdict matche
 
 ## Measured speed and cost
 
-- Time to a useful result: mean 0.56 s, max 0.89 s tap-to-result on this laptop (Chromium via Playwright; pipeline mean 0.23 s, max 0.52 s), from `testset/RESULTS.md`. Engine init once per session: 2.3 s on the laptop. Phone timings: measured live in the video from the Timings panel (the deployed page shows them under the result).
+- Time to a useful result: mean 0.46 s, max 0.58 s tap-to-result on this laptop (Chromium via Playwright; pipeline mean 0.19 s, max 0.31 s), from `testset/RESULTS.md`. Rejects exit in 0.10 s on average. Engine init once per session: 2.3 s on the laptop. Phone timings: measured live in the video from the Timings panel (the deployed page shows them under the result).
 - Variable cost per image: $0.00 — no API calls, no upload; recognition, reasoning, speech, retries, paid intermediaries: none used.
 - Hosting: static site on Vercel Hobby ($0, non-commercial; custom domains allowed) — Pro $20/month for commercial use or a team. Bandwidth: ~4 MB compressed one-time engine download per new visitor.
 - Pricing assumptions: Vercel public pricing as of 2026-09; no free credits involved.
