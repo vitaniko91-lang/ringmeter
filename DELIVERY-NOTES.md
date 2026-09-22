@@ -58,7 +58,8 @@ Overall: 29 photos, max |err| 0.52 mm, mean 0.29 mm, within ± 0.5 mm 22/24, ver
 
 ## Measured speed and cost
 
-- Time to a useful result: mean 0.46 s, max 0.58 s tap-to-result on this laptop (Chromium via Playwright; pipeline mean 0.19 s, max 0.31 s), from `testset/RESULTS.md`. Rejects exit in 0.10 s on average. Engine init once per session: 2.3 s on the laptop. Phone timings: measured live in the video from the Timings panel (the deployed page shows them under the result).
+- Time to a useful result: mean 0.46 s, max 0.58 s tap-to-result on this laptop (Chromium via Playwright; pipeline mean 0.19 s, max 0.31 s), from `testset/RESULTS.md`. Rejects exit in 0.10 s on average. Engine init once per session: 2.3 s on the laptop.
+- Phone, measured live in the walkthrough video on an iPhone over Wi-Fi: **tap to result 531 ms**, engine init 1572 ms once per session (file decode 226 · marker 140 · rectify 52 · ring 59 · gates 7 · result 12 ms).
 - Variable cost per image: $0.00 — no API calls, no upload; recognition, reasoning, speech, retries, paid intermediaries: none used.
 - Hosting: static site on Vercel Hobby ($0, non-commercial; custom domains allowed) — Pro $20/month for commercial use or a team. Bandwidth: ~4 MB compressed one-time engine download per new visitor.
 - Pricing assumptions: Vercel public pricing as of 2026-09; no free credits involved.
